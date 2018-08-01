@@ -1,0 +1,15 @@
+﻿  Camera.cpp
+d:\vsproject\vldx11\vldx11\globalinclude.h(21): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+d:\vsproject\vldx11\vldx11\globalinclude.h(25): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  main.cpp
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
+d:\vsproject\vldx11\vldx11\globalinclude.h(21): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+d:\vsproject\vldx11\vldx11\globalinclude.h(25): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+d:\vsproject\vldx11\vldx11\main.cpp(277): warning C4305: '-=': truncation from 'double' to 'float'
+d:\vsproject\vldx11\vldx11\main.cpp(281): warning C4305: '+=': truncation from 'double' to 'float'
+d:\vsproject\vldx11\vldx11\main.cpp(285): warning C4305: '+=': truncation from 'double' to 'float'
+d:\vsproject\vldx11\vldx11\main.cpp(289): warning C4305: '-=': truncation from 'double' to 'float'
+d:\vsproject\vldx11\vldx11\main.cpp(293): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\vsproject\vldx11\vldx11\main.cpp(297): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  vldx11.vcxproj -> D:\vsproject\vldx11\Debug\vldx11.exe
