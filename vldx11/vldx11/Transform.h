@@ -9,6 +9,7 @@ public:
 	~Transform();
 
 	void SetM(XMFLOAT4X4* M);
+	void SetM_INV(XMFLOAT4X4* M, XMFLOAT4X4* M_INV);
 
 	XMFLOAT3 position;
 	XMFLOAT3 rotation;

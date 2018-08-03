@@ -5,6 +5,8 @@
 #include "Material.h"
 #include "Drawable.h"
 #include "Transform.h"
+#include "Scene.h"
+#include "Light.h"
 
 IDXGISwapChain* SwapChain;
 ID3D11Device* d3d11Device;
@@ -27,18 +29,22 @@ const int Width = 800;
 const int Height = 600;
 uint32_t frame = 0;
 
-Camera mCamera(XMFLOAT3(0.0f, 0.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 100.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
-Mesh mMesh(0, 0, 0, nullptr, nullptr);
-Material mMaterial("myVert.hlsl", "myPixel.hlsl", layout, ARRAYSIZE(layout));
-Drawable mDrawable;
-Transform mTransform(XMFLOAT3(0,0,0), XMFLOAT3(45,45,0), XMFLOAT3(1,1,1));
-ObjectUniform mObjectUniform;
-FrameUniform mFrameUniform;
-
 IDirectInputDevice8* DIKeyboard;
 IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
+
+Scene mScene;
+Camera mCamera(XMFLOAT3(0.0f, 0.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 100.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
+Mesh mMesh(0, 0, 0, nullptr, nullptr);
+Material mMaterial(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
+Drawable mDrawable;
+Transform mTransform(XMFLOAT3(0, 0, 0), XMFLOAT3(45, 45, 0), XMFLOAT3(1, 1, 1));
+Light mLight(XMFLOAT3(1, 1, 1), XMFLOAT4(0.8, 0.7, 0, 1));
+
+ObjectUniform mObjectUniform;
+FrameUniform mFrameUniform;
+SceneUniform mSceneUniform;
 
 void InitConsole()
 {
@@ -231,28 +237,43 @@ bool InitDirectInput(HINSTANCE hInstance)
 
 bool InitScene()
 {
+	printf("init scene start!\n");
 	InitViewport();
+	printf("init viewport done!\n");
 
-	//TO DO: Create and set buffers
+	//Create and set buffers
 	mObjectUniform.COL = XMFLOAT4(1, 1, 1, 1);
-	mTransform.SetM(&mObjectUniform.M);
+	mTransform.SetM_INV(&mObjectUniform.M, &mObjectUniform.M_INV);
 
 	mFrameUniform.COL = XMFLOAT4(1, 1, 1, 1);
-	mCamera.SetVP(&mFrameUniform.VP);
+	mFrameUniform.cameraPos = mCamera.pos;
+	mCamera.SetVP_INV(&mFrameUniform.VP, &mFrameUniform.VP_INV);
 
-	PrintMatrix(mObjectUniform.M);
-	PrintMatrix(mFrameUniform.VP);
+	mSceneUniform.step = 50;
+	mSceneUniform.farClip = mCamera.farClipPlane;
+	mSceneUniform.lightPos = mLight.pos;
+	mSceneUniform.lightCol = mLight.col;
 
-	if (!mCamera.CreateBuffer(d3d11Device)) return false;
 	if (!mDrawable.CreateBuffer(d3d11Device, &mMesh)) return false;
+	printf("drawble create buffer done!\n");
+	if (!mScene.CreateBuffer(d3d11Device)) return false;
+	printf("scene create buffer done!\n");
+	if (!mCamera.CreateBuffer(d3d11Device)) return false;
+	printf("camera create buffer done!\n");
 	if (!mMaterial.CreateShader(d3d11Device)) return false;
+	printf("material create buffer done!\n");
 	if (!mMaterial.CreateLayout(d3d11Device)) return false;
+	printf("material create layout done!\n");
 	
+	mScene.SceneUniformBufferData(d3d11DevCon, &mSceneUniform);
+	mScene.SetSceneUniformBufferVSPS(d3d11DevCon);
 	mCamera.FrameUniformBufferData(d3d11DevCon, &mFrameUniform);
-	mCamera.SetBuffer(d3d11DevCon);
+	mCamera.SetFrameUniformBufferVSPS(d3d11DevCon);
 	mDrawable.VertexIndexBufferData(d3d11DevCon, &mMesh);
 	mDrawable.ObjectUniformBufferData(d3d11DevCon, &mObjectUniform);
+	mDrawable.SetObjectUniformBufferVSPS(d3d11DevCon);
 
+	printf("init scene finish!\n");
 	return true;
 }
 
@@ -304,12 +325,12 @@ void DetectInput()
 
 void UpdateScene()
 {
-	mTransform.SetM(&mObjectUniform.M);
-
+	//mTransform.SetM(&mObjectUniform.M);
+	mTransform.SetM_INV(&mObjectUniform.M, &mObjectUniform.M_INV);
 	mDrawable.ObjectUniformBufferData(d3d11DevCon, &mObjectUniform);
 
-	mCamera.SetVP(&mFrameUniform.VP);
-
+	//mCamera.SetVP(&mFrameUniform.VP);
+	mCamera.SetVP_INV(&mFrameUniform.VP, &mFrameUniform.VP_INV);
 	mCamera.FrameUniformBufferData(d3d11DevCon, &mFrameUniform);
 
 	frame++;
@@ -409,6 +430,7 @@ bool CheckError(HRESULT hr, ID3D10Blob* error_message)
 {
 	if (FAILED(hr))
 	{
+		printf("FAILED:0x%x\n", hr);
 		if (error_message != nullptr)
 		{
 			printf("return value: %d, error message: %s\n", hr, (char*)error_message->GetBufferPointer());

@@ -1,15 +1,15 @@
 #include "Drawable.h"
 
-Drawable::Drawable()
+Drawable::Drawable() : vertexBuffer(nullptr), indexBuffer(nullptr), objectUniformBuffer(nullptr)
 {
 }
 
 
 Drawable::~Drawable()
 {
-	vertexBuffer->Release();
-	indexBuffer->Release();
-	objectUniformBuffer->Release();
+	if (vertexBuffer!=nullptr) vertexBuffer->Release();
+	if (indexBuffer != nullptr) indexBuffer->Release();
+	if (objectUniformBuffer != nullptr) objectUniformBuffer->Release();
 }
 
 bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
@@ -24,9 +24,6 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
-	//D3D11_SUBRESOURCE_DATA vertexBufferData;//
-	//ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));//
-	//vertexBufferData.pSysMem = mesh->vertices;//
 	hr = d3d11Device->CreateBuffer(&vertexBufferDesc, NULL, &vertexBuffer);//
 	if (!CheckError(hr, nullptr)) return false;
 	//Vertex Buffer Finish
@@ -39,9 +36,6 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
-	//D3D11_SUBRESOURCE_DATA indexBufferData;//
-	//ZeroMemory(&indexBufferData, sizeof(indexBufferData));//
-	//indexBufferData.pSysMem = mesh->indices;//
 	hr = d3d11Device->CreateBuffer(&indexBufferDesc, NULL, &indexBuffer);//
 	if (!CheckError(hr, nullptr)) return false;
 	//Index Buffer Finish
@@ -72,20 +66,34 @@ void Drawable::ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon, ObjectU
 	d3d11DevCon->UpdateSubresource(objectUniformBuffer, 0, NULL, uni, 0, 0);
 }
 
-bool Drawable::SetBuffer(ID3D11DeviceContext* d3d11DevCon)
+void Drawable::SetVertexIndexBuffer(ID3D11DeviceContext* d3d11DevCon)
 {
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	d3d11DevCon->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	d3d11DevCon->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+}
+
+void Drawable::SetObjectUniformBufferVS(ID3D11DeviceContext* d3d11DevCon)
+{
 	d3d11DevCon->VSSetConstantBuffers(OBJECT_UNIFORM_SOLT, 1, &objectUniformBuffer);
-	return true;
+}
+
+void Drawable::SetObjectUniformBufferPS(ID3D11DeviceContext* d3d11DevCon)
+{
+	d3d11DevCon->PSSetConstantBuffers(OBJECT_UNIFORM_SOLT, 1, &objectUniformBuffer);
+}
+
+void Drawable::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
+{
+	SetObjectUniformBufferVS(d3d11DevCon);
+	SetObjectUniformBufferPS(d3d11DevCon);
 }
 
 void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
 {
 	mat->SetShader(d3d11DevCon);
 	mat->SetLayout(d3d11DevCon);
-	SetBuffer(d3d11DevCon);
+	SetVertexIndexBuffer(d3d11DevCon);
 	d3d11DevCon->DrawIndexed(mesh->indexNum, 0, 0);
 }

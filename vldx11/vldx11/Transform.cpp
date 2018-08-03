@@ -16,3 +16,13 @@ void Transform::SetM(XMFLOAT4X4* M)
 					   XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) * 
 					   XMMatrixTranslation(position.x, position.y, position.z));
 }
+
+void Transform::SetM_INV(XMFLOAT4X4* M, XMFLOAT4X4* M_INV)
+{
+	XMMATRIX temp = XMMatrixScaling(scale.x, scale.y, scale.z) *
+					XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) *
+					XMMatrixTranslation(position.x, position.y, position.z);
+
+	XMStoreFloat4x4(M, temp);
+	XMStoreFloat4x4(M_INV, XMMatrixInverse(nullptr, temp));
+}

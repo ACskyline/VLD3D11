@@ -4,7 +4,7 @@
 class Material
 {
 public:
-	Material(string _vsName, string _psName, D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], uint8_t _vertLayoutDescSize);
+	Material(wstring _vsName, wstring _psName, D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], uint8_t _vertLayoutDescSize);
 	~Material();
 
 	bool CreateShader(ID3D11Device* d3d11Device);
@@ -13,8 +13,8 @@ public:
 	void SetLayout(ID3D11DeviceContext* d3d11DevCon);
 
 private:
-	string vsName;
-	string psName;
+	wstring vsName;
+	wstring psName;
 	ID3D11VertexShader* VS;
 	ID3D11PixelShader* PS;
 	ID3DBlob* VS_Buffer;

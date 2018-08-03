@@ -10,8 +10,11 @@ public:
 
 	bool CreateBuffer(ID3D11Device* d3d11Device);
 	void FrameUniformBufferData(ID3D11DeviceContext* d3d11DevCon, FrameUniform* uni);
-	bool SetBuffer(ID3D11DeviceContext* d3d11DevCon);
+	void SetFrameUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
+	void SetFrameUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
+	void SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetVP(XMFLOAT4X4* VP);
+	void SetVP_INV(XMFLOAT4X4* VP, XMFLOAT4X4* VP_INV);
 
 	XMFLOAT3 pos;
 	XMFLOAT3 target;
