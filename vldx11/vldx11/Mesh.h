@@ -21,5 +21,6 @@ private:
 	uint8_t type;
 	void InitCube();
 	void InitSquare();
+	void InitAxis();
 };
 

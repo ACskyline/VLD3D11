@@ -1,13 +1,4 @@
-﻿  main.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-d:\vsproject\vldx11\vldx11\globalinclude.h(21): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-d:\vsproject\vldx11\vldx11\globalinclude.h(25): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-d:\vsproject\vldx11\vldx11\main.cpp(43): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\vsproject\vldx11\vldx11\main.cpp(298): warning C4305: '-=': truncation from 'double' to 'float'
-d:\vsproject\vldx11\vldx11\main.cpp(302): warning C4305: '+=': truncation from 'double' to 'float'
-d:\vsproject\vldx11\vldx11\main.cpp(306): warning C4305: '+=': truncation from 'double' to 'float'
-d:\vsproject\vldx11\vldx11\main.cpp(310): warning C4305: '-=': truncation from 'double' to 'float'
-d:\vsproject\vldx11\vldx11\main.cpp(314): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-d:\vsproject\vldx11\vldx11\main.cpp(318): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-d:\vsproject\vldx11\vldx11\main.cpp(375): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
-  vldx11.vcxproj -> D:\vsproject\vldx11\x64\Debug\vldx11.exe
+﻿  Object.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(25): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(29): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  vldx11.vcxproj -> E:\MyProjects\vld3d11\VLD3D11\vldx11\x64\Debug\vldx11.exe

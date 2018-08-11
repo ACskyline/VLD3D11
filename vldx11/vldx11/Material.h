@@ -10,7 +10,8 @@ public:
 	bool CreateShader(ID3D11Device* d3d11Device);
 	bool CreateLayout(ID3D11Device* d3d11Device);
 	void SetShader(ID3D11DeviceContext* d3d11DevCon);
-	void SetLayout(ID3D11DeviceContext* d3d11DevCon);
+	void SetLayoutTriangleList(ID3D11DeviceContext* d3d11DevCon);
+	void SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon);
 
 private:
 	wstring vsName;

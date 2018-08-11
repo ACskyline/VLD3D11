@@ -44,7 +44,7 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	D3D11_BUFFER_DESC objectBufferDesc;
 	ZeroMemory(&objectBufferDesc, sizeof(D3D11_BUFFER_DESC));
 	objectBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	objectBufferDesc.ByteWidth = sizeof(ObjectUniform);
+	objectBufferDesc.ByteWidth = sizeof(ObjectUniformData);
 	objectBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	objectBufferDesc.CPUAccessFlags = 0;
 	objectBufferDesc.MiscFlags = 0;
@@ -61,9 +61,9 @@ void Drawable::VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon, Mesh* mes
 	d3d11DevCon->UpdateSubresource(indexBuffer, 0, NULL, mesh->indices, 0, 0);
 }
 
-void Drawable::ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon, ObjectUniform* uni)
+void Drawable::ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
 {
-	d3d11DevCon->UpdateSubresource(objectUniformBuffer, 0, NULL, uni, 0, 0);
+	d3d11DevCon->UpdateSubresource(objectUniformBuffer, 0, NULL, &objectUniformData, 0, 0);
 }
 
 void Drawable::SetVertexIndexBuffer(ID3D11DeviceContext* d3d11DevCon)
@@ -90,10 +90,42 @@ void Drawable::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetObjectUniformBufferPS(d3d11DevCon);
 }
 
-void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+void Drawable::DrawTriangleList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
 {
 	mat->SetShader(d3d11DevCon);
-	mat->SetLayout(d3d11DevCon);
+	mat->SetLayoutTriangleList(d3d11DevCon);
 	SetVertexIndexBuffer(d3d11DevCon);
+	SetObjectUniformBufferVSPS(d3d11DevCon);
 	d3d11DevCon->DrawIndexed(mesh->indexNum, 0, 0);
+}
+
+void Drawable::DrawLineList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+{
+	mat->SetShader(d3d11DevCon);
+	mat->SetLayoutLineList(d3d11DevCon);
+	SetVertexIndexBuffer(d3d11DevCon);
+	SetObjectUniformBufferVSPS(d3d11DevCon);
+	d3d11DevCon->DrawIndexed(mesh->indexNum, 0, 0);
+}
+
+void Drawable::SetM(Transform* pTransform)
+{
+	XMStoreFloat4x4(&objectUniformData.M, XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z) *
+					   XMMatrixRotationRollPitchYaw(pTransform->rotation.x, pTransform->rotation.y, pTransform->rotation.z) *
+					   XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z));
+}
+
+void Drawable::SetM_INV(Transform* pTransform)
+{
+	XMMATRIX temp = XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z) *
+					XMMatrixRotationRollPitchYaw(pTransform->rotation.x, pTransform->rotation.y, pTransform->rotation.z) *
+					XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z);
+
+	XMStoreFloat4x4(&objectUniformData.M, temp);
+	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));
+}
+
+void Drawable::SetTransform(Transform* pTransform)
+{
+	SetM_INV(pTransform);
 }

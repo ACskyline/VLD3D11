@@ -24,10 +24,10 @@ bool Material::CreateShader(ID3D11Device* d3d11Device)
 	HRESULT hr;
 	ID3DBlob* error = nullptr;
 
-	hr = D3DCompileFromFile(vsName.c_str(), 0, 0, "main", "vs_4_0", 0, 0, &VS_Buffer, &error);//entry point is the function name
+	hr = D3DCompileFromFile(vsName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_4_0", 0, 0, &VS_Buffer, &error);//entry point is the function name
 	if (!CheckError(hr, error)) return false;
 
-	hr = D3DCompileFromFile(psName.c_str(), 0, 0, "main", "ps_4_0", 0, 0, &PS_Buffer, &error);//entry point is the function name
+	hr = D3DCompileFromFile(psName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_4_0", 0, 0, &PS_Buffer, &error);//entry point is the function name
 	if (!CheckError(hr, error)) return false;
 
 	hr = d3d11Device->CreateVertexShader(VS_Buffer->GetBufferPointer(), VS_Buffer->GetBufferSize(), NULL, &VS);
@@ -57,11 +57,20 @@ void Material::SetShader(ID3D11DeviceContext* d3d11DevCon)
 	d3d11DevCon->PSSetShader(PS, 0, 0);
 }
 
-void Material::SetLayout(ID3D11DeviceContext* d3d11DevCon)
+void Material::SetLayoutTriangleList(ID3D11DeviceContext* d3d11DevCon)
 {
 	//Set the Input Layout
 	d3d11DevCon->IASetInputLayout(vertLayout);
 	//Set Primitive Topology
 	d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+}
+
+void Material::SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon)
+{
+	//Set the Input Layout
+	d3d11DevCon->IASetInputLayout(vertLayout);
+	//Set Primitive Topology
+	d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
 }

@@ -1,12 +1,7 @@
 #include <windows.h>
 #include <dinput.h>
-#include "Camera.h"
-#include "Mesh.h"
-#include "Material.h"
-#include "Drawable.h"
-#include "Transform.h"
-#include "Scene.h"
-#include "Light.h"
+#include "Object.h"
+#include "OrbitCamera.h"
 
 IDXGISwapChain* SwapChain;
 ID3D11Device* d3d11Device;
@@ -34,17 +29,22 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Scene mScene;
-Camera mCamera(XMFLOAT3(0.0f, 0.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 100.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
-Mesh mMesh(0, 0, 0, nullptr, nullptr);
-Material mMaterial(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
-Drawable mDrawable;
-Transform mTransform(XMFLOAT3(0, 0, 0), XMFLOAT3(45, 45, 0), XMFLOAT3(1, 1, 1));
-Light mLight(XMFLOAT3(1, 1, 1), XMFLOAT4(0.8, 0.7, 0, 1));
-
-ObjectUniform mObjectUniform;
+Mesh mMeshVolume(0, 0, 0, nullptr, nullptr);
+Mesh mMeshAxis(2, 0, 0, nullptr, nullptr);
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialAxis(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
+Drawable mDrawableVolume;
+Drawable mDrawableAxis;
+Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(8, 8, 8));
+Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
+OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
+Light mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(0.8, 0.7, 0, 1));
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
+Object objVolume;
+Object objLight;
+Object objCamera;
+Object objAxis;
 
 void InitConsole()
 {
@@ -235,45 +235,51 @@ bool InitDirectInput(HINSTANCE hInstance)
 	return true;
 }
 
-bool InitScene()
+bool InitLevel()
 {
-	printf("init scene start!\n");
+	printf("init Level start!\n");
 	InitViewport();
 	printf("init viewport done!\n");
 
 	//Create and set buffers
-	mObjectUniform.COL = XMFLOAT4(1, 1, 1, 1);
-	mTransform.SetM_INV(&mObjectUniform.M, &mObjectUniform.M_INV);
+	mDrawableVolume.objectUniformData.COL = XMFLOAT4(1, 1, 1, 1);
+	mDrawableAxis.objectUniformData.COL = XMFLOAT4(1, 1, 1, 1);
 
-	mFrameUniform.COL = XMFLOAT4(1, 1, 1, 1);
-	mFrameUniform.cameraPos = mCamera.pos;
-	mCamera.SetVP_INV(&mFrameUniform.VP, &mFrameUniform.VP_INV);
+	mFrameUniform.frameUniformData.COL = XMFLOAT4(1, 1, 1, 1);
+	mFrameUniform.frameUniformData.intensity = 5.f;
+	mFrameUniform.frameUniformData.frameNum = frame;
 
-	mSceneUniform.step = 50;
-	mSceneUniform.farClip = mCamera.farClipPlane;
-	mSceneUniform.lightPos = mLight.pos;
-	mSceneUniform.lightCol = mLight.col;
+	mSceneUniform.sceneUniformData.step = 50;
 
-	if (!mDrawable.CreateBuffer(d3d11Device, &mMesh)) return false;
-	printf("drawble create buffer done!\n");
-	if (!mScene.CreateBuffer(d3d11Device)) return false;
-	printf("scene create buffer done!\n");
-	if (!mCamera.CreateBuffer(d3d11Device)) return false;
-	printf("camera create buffer done!\n");
-	if (!mMaterial.CreateShader(d3d11Device)) return false;
-	printf("material create buffer done!\n");
-	if (!mMaterial.CreateLayout(d3d11Device)) return false;
-	printf("material create layout done!\n");
+	objVolume.pMesh = &mMeshVolume;
+	objVolume.pTransform = &mTransformVolume;
+	objVolume.pMaterial = &mMaterialVolume;
+	objVolume.pDrawable = &mDrawableVolume;
 	
-	mScene.SceneUniformBufferData(d3d11DevCon, &mSceneUniform);
-	mScene.SetSceneUniformBufferVSPS(d3d11DevCon);
-	mCamera.FrameUniformBufferData(d3d11DevCon, &mFrameUniform);
-	mCamera.SetFrameUniformBufferVSPS(d3d11DevCon);
-	mDrawable.VertexIndexBufferData(d3d11DevCon, &mMesh);
-	mDrawable.ObjectUniformBufferData(d3d11DevCon, &mObjectUniform);
-	mDrawable.SetObjectUniformBufferVSPS(d3d11DevCon);
+	objAxis.pMesh = &mMeshAxis;
+	objAxis.pTransform = &mTransformAxis;
+	objAxis.pMaterial = &mMaterialAxis;
+	objAxis.pDrawable = &mDrawableAxis;
 
-	printf("init scene finish!\n");
+	objCamera.pCamera = &mCamera;
+	objCamera.pFrameUniform = &mFrameUniform;
+
+	objLight.pLight = &mLight;
+	objLight.pSceneUniform = &mSceneUniform;
+	
+	if (!objVolume.InitObject(d3d11Device, d3d11DevCon)) return false;
+	printf("objVolume initiated!\n");
+	if (!objAxis.InitObject(d3d11Device, d3d11DevCon)) return false;
+	printf("objAxis initiated!\n");
+	if (!objCamera.InitObject(d3d11Device, d3d11DevCon)) return false;
+	printf("objCamera initiated!\n");
+	if (!objLight.InitObject(d3d11Device, d3d11DevCon)) return false;
+	printf("objLight initiated!\n");
+
+	if (!mFrameUniform.InitFrameUniform(d3d11Device, d3d11DevCon)) return false;
+	if (!mSceneUniform.InitSceneUniform(d3d11Device, d3d11DevCon)) return false;
+
+	printf("init level finish!\n");
 	return true;
 }
 
@@ -293,29 +299,85 @@ void DetectInput()
 		PostMessage(hwnd, WM_DESTROY, 0, 0);
 	}
 
-	if (keyboardState[DIK_LEFT] & 0x80)
+	if (keyboardState[DIK_W] & 0x80)
 	{
-		mTransform.position.x -= 0.0001;
+		mTransformVolume.position.y += 0.0005;
 	}
-	if (keyboardState[DIK_RIGHT] & 0x80)
+	if (keyboardState[DIK_S] & 0x80)
 	{
-		mTransform.position.x += 0.0001;
+		mTransformVolume.position.y -= 0.0005;
+	}
+	if (keyboardState[DIK_A] & 0x80)
+	{
+		mTransformVolume.position.x -= 0.0005;
+	}
+	if (keyboardState[DIK_D] & 0x80)
+	{
+		mTransformVolume.position.x += 0.0005;
+	}
+	if (keyboardState[DIK_Q] & 0x80)
+	{
+		mTransformVolume.position.z -= 0.0005;
+	}
+	if (keyboardState[DIK_E] & 0x80)
+	{
+		mTransformVolume.position.z += 0.0005;
 	}
 	if (keyboardState[DIK_UP] & 0x80)
 	{
-		mTransform.position.y += 0.0001;
+		mLight.pos.y += 0.005;
+		mTransformAxis.position.y += 0.005;
 	}
 	if (keyboardState[DIK_DOWN] & 0x80)
 	{
-		mTransform.position.y -= 0.0001;
+		mLight.pos.y -= 0.005;
+		mTransformAxis.position.y -= 0.005;
+	}
+	if (keyboardState[DIK_LEFT] & 0x80)
+	{
+		mLight.pos.x -= 0.005;
+		mTransformAxis.position.x -= 0.005;
+	}
+	if (keyboardState[DIK_RIGHT] & 0x80)
+	{
+		mLight.pos.x += 0.005;
+		mTransformAxis.position.x += 0.005;
+	}
+	if (keyboardState[DIK_COMMA] & 0x80)
+	{
+		mLight.pos.z -= 0.005;
+		mTransformAxis.position.z -= 0.005;
+	}
+	if (keyboardState[DIK_PERIOD] & 0x80)
+	{
+		mLight.pos.z += 0.005;
+		mTransformAxis.position.z += 0.005;
 	}
 	if (mouseCurrState.lX != 0)
 	{
-		mTransform.rotation.y += mouseCurrState.lX * 0.01;
+		if (keyboardState[DIK_LCONTROL] & 0x80)
+			mTransformVolume.rotation.y += mouseCurrState.lX * 0.01;
+		else
+			mCamera.horizontalAngle += mouseCurrState.lX * 0.1;
 	}
 	if (mouseCurrState.lY != 0)
 	{
-		mTransform.rotation.z += mouseCurrState.lY * 0.01;
+		if (keyboardState[DIK_LCONTROL] & 0x80)
+		{
+			mTransformVolume.rotation.z += mouseCurrState.lY * 0.01;
+		}
+		else
+		{
+			mCamera.verticalAngle += mouseCurrState.lY * 0.1;
+			if (mCamera.verticalAngle > 90 - EPSILON)
+				mCamera.verticalAngle = 89 - EPSILON;
+			if (mCamera.verticalAngle < -90 + EPSILON)
+				mCamera.verticalAngle = -89 + EPSILON;
+		}
+	}
+	if (mouseCurrState.lZ != 0)
+	{
+		mCamera.distance -= mouseCurrState.lZ * 0.01;
 	}
 
 	mouseLastState = mouseCurrState;
@@ -325,13 +387,10 @@ void DetectInput()
 
 void UpdateScene()
 {
-	//mTransform.SetM(&mObjectUniform.M);
-	mTransform.SetM_INV(&mObjectUniform.M, &mObjectUniform.M_INV);
-	mDrawable.ObjectUniformBufferData(d3d11DevCon, &mObjectUniform);
-
-	//mCamera.SetVP(&mFrameUniform.VP);
-	mCamera.SetVP_INV(&mFrameUniform.VP, &mFrameUniform.VP_INV);
-	mCamera.FrameUniformBufferData(d3d11DevCon, &mFrameUniform);
+	objVolume.UpdateObject(d3d11DevCon);
+	objAxis.UpdateObject(d3d11DevCon);
+	objCamera.UpdateObject(d3d11DevCon);
+	objLight.UpdateObject(d3d11DevCon);
 
 	frame++;
 }
@@ -339,13 +398,14 @@ void UpdateScene()
 void DrawScene()
 {
 	//Clear our backbuffer to the updated color
-	XMVECTORF32 bgColorV{ 0,0,0,1 };
+	XMVECTORF32 bgColorV { 0,0,0,1 };
 
 	d3d11DevCon->ClearRenderTargetView(renderTargetView, bgColorV);
 	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	//Draw Call
-	mDrawable.Draw(d3d11DevCon, &mMesh, &mMaterial);
+	objVolume.DrawObjectTriangleList(d3d11DevCon);
+	objAxis.DrawObjectLineList(d3d11DevCon);
 
 	//Present the backbuffer to the screen
 	SwapChain->Present(0, 0);
@@ -413,9 +473,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	if (!InitScene())    //Initialize our scene
+	if (!InitLevel())    //Initialize our scene
 	{
-		MessageBox(0, "Scene Initialization - Failed", "Error", MB_OK);
+		MessageBox(0, "Level Initialization - Failed", "Error", MB_OK);
 		return 0;
 	}
 

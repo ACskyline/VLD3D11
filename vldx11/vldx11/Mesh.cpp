@@ -16,6 +16,8 @@ Mesh::Mesh(uint8_t _type, uint32_t _vertexNum, uint32_t _indexNum, Vertex* _vert
 	case 1:
 		InitSquare();
 		break;
+	case 2:
+		InitAxis();
 	default:
 		break;
 	}
@@ -25,6 +27,29 @@ Mesh::~Mesh()
 {
 	MY_DELETE_ARRAY(vertices);
 	MY_DELETE_ARRAY(indices);
+}
+
+void Mesh::InitAxis()
+{
+	vertexNum = 6;
+	indexNum = 6;
+	vertices = new Vertex[vertexNum];
+	indices = new Index[indexNum];
+
+	vertices[0] = Vertex(0, 0, 0, 1, 0, 0, 1);
+	vertices[1] = Vertex(1, 0, 0, 1, 0, 0, 1);
+	vertices[2] = Vertex(0, 0, 0, 0, 1, 0, 1);
+	vertices[3] = Vertex(0, 1, 0, 0, 1, 0, 1);
+	vertices[4] = Vertex(0, 0, 0, 0, 0, 1, 1);
+	vertices[5] = Vertex(0, 0, 1, 0, 0, 1, 1);
+
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
+	indices[3] = 3;
+	indices[4] = 4;
+	indices[5] = 5;
+
 }
 
 void Mesh::InitCube()

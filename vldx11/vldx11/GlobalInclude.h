@@ -14,6 +14,10 @@
 #define HALF_PI 1.570796326794896
 #endif
 
+#ifndef EPSILON
+#define EPSILON 0.00000001
+#endif
+
 #ifndef DEGREE_TO_RADIAN
 #define DEGREE_TO_RADIAN 0.017453292519943
 #endif
@@ -40,33 +44,6 @@
 
 using namespace DirectX;
 using namespace std;
-
-struct ObjectUniform
-{
-	XMFLOAT4X4 M;
-	XMFLOAT4X4 M_INV;
-	XMFLOAT4 COL;
-};
-
-struct FrameUniform
-{
-	XMFLOAT4X4 VP;
-	XMFLOAT4X4 VP_INV;
-	XMFLOAT4 COL;
-	XMFLOAT3 cameraPos;
-	uint32_t PAD1;//padding
-};
-
-struct SceneUniform
-{
-	XMFLOAT4 lightCol;
-	XMFLOAT3 lightPos;
-	uint32_t step;
-	float farClip;
-	uint32_t PAD1;//padding
-	uint32_t PAD2;//padding
-	uint32_t PAD3;//padding
-};
 
 struct Vertex
 {

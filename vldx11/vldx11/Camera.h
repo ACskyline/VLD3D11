@@ -6,17 +6,9 @@ class Camera
 public:
 	Camera(XMFLOAT3 _pos, XMFLOAT3 _target, XMFLOAT3 _up, 
 		float _fovDegree, float _aspect, float _nearClipPlane, float _farClipPlane);
-	~Camera();
+	virtual ~Camera();
 
-	bool CreateBuffer(ID3D11Device* d3d11Device);
-	void FrameUniformBufferData(ID3D11DeviceContext* d3d11DevCon, FrameUniform* uni);
-	void SetFrameUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
-	void SetFrameUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
-	void SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void SetVP(XMFLOAT4X4* VP);
-	void SetVP_INV(XMFLOAT4X4* VP, XMFLOAT4X4* VP_INV);
-
-	XMFLOAT3 pos;
+	XMFLOAT3 position;
 	XMFLOAT3 target;
 	XMFLOAT3 up;
 	float fovDegree;
@@ -24,7 +16,6 @@ public:
 	float nearClipPlane;
 	float farClipPlane;
 
-private:
-	ID3D11Buffer * frameUniformBuffer;
+	virtual void UpdatePosition();
 };
 
