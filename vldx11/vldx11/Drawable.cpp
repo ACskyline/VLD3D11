@@ -1,6 +1,7 @@
 #include "Drawable.h"
 
-Drawable::Drawable() : vertexBuffer(nullptr), indexBuffer(nullptr), objectUniformBuffer(nullptr)
+Drawable::Drawable(uint8_t _type) : vertexBuffer(nullptr), indexBuffer(nullptr), 
+objectUniformBuffer(nullptr), pObject(nullptr), type(_type)
 {
 }
 
@@ -90,6 +91,14 @@ void Drawable::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetObjectUniformBufferPS(d3d11DevCon);
 }
 
+void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+{
+	if (type == 0)
+		DrawTriangleList(d3d11DevCon, mesh, mat);
+	else if (type == 1)
+		DrawLineList(d3d11DevCon, mesh, mat);
+}
+
 void Drawable::DrawTriangleList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
 {
 	mat->SetShader(d3d11DevCon);
@@ -125,7 +134,22 @@ void Drawable::SetM_INV(Transform* pTransform)
 	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));
 }
 
-void Drawable::SetTransform(Transform* pTransform)
+void Drawable::ApplyTransform(Transform* pTransform)
 {
 	SetM_INV(pTransform);
+}
+
+void Drawable::ApplyColor(float r, float g, float b, float a)
+{
+	objectUniformData.COL = XMFLOAT4(r, g, b, a);
+}
+
+void Drawable::SetObject(Object* _pObject)
+{
+	pObject = _pObject;
+}
+
+Object* Drawable::GetObject()
+{
+	return pObject;
 }

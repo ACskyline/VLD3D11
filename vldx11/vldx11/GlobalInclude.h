@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #ifndef HALF_PI
 #define HALF_PI 1.570796326794896

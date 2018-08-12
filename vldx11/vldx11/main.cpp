@@ -2,6 +2,7 @@
 #include <dinput.h>
 #include "Object.h"
 #include "OrbitCamera.h"
+#include "DrawableGroup.h"
 
 IDXGISwapChain* SwapChain;
 ID3D11Device* d3d11Device;
@@ -33,8 +34,8 @@ Mesh mMeshVolume(0, 0, 0, nullptr, nullptr);
 Mesh mMeshAxis(2, 0, 0, nullptr, nullptr);
 Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialAxis(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Drawable mDrawableVolume;
-Drawable mDrawableAxis;
+Drawable mDrawableVolume(0);
+Drawable mDrawableAxis(1);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(8, 8, 8));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
@@ -45,6 +46,7 @@ Object objVolume;
 Object objLight;
 Object objCamera;
 Object objAxis;
+DrawableGroup grpDrawable;
 
 void InitConsole()
 {
@@ -239,43 +241,40 @@ bool InitLevel()
 {
 	printf("init Level start!\n");
 	InitViewport();
-	printf("init viewport done!\n");
 
 	//Create and set buffers
-	mDrawableVolume.objectUniformData.COL = XMFLOAT4(1, 1, 1, 1);
-	mDrawableAxis.objectUniformData.COL = XMFLOAT4(1, 1, 1, 1);
+	mDrawableVolume.ApplyColor(1, 1, 1, 1);
+	mDrawableAxis.ApplyColor(1, 1, 1, 1);
 
-	mFrameUniform.frameUniformData.COL = XMFLOAT4(1, 1, 1, 1);
-	mFrameUniform.frameUniformData.intensity = 5.f;
-	mFrameUniform.frameUniformData.frameNum = frame;
+	grpDrawable.AddDrawable(&mDrawableVolume);
+	grpDrawable.AddDrawable(&mDrawableAxis);
 
-	mSceneUniform.sceneUniformData.step = 50;
+	mFrameUniform.ApplyCol(1, 1, 1, 1);
+	mFrameUniform.ApplyIntensity(5.f);
+	mFrameUniform.ApplyFrameNum(frame);
 
-	objVolume.pMesh = &mMeshVolume;
-	objVolume.pTransform = &mTransformVolume;
-	objVolume.pMaterial = &mMaterialVolume;
-	objVolume.pDrawable = &mDrawableVolume;
+	mSceneUniform.ApplyStep(50);
+
+	objVolume.SetMesh(&mMeshVolume);
+	objVolume.SetTransform(&mTransformVolume);
+	objVolume.SetMaterial(&mMaterialVolume);
+	objVolume.SetDrawable(&mDrawableVolume);
 	
-	objAxis.pMesh = &mMeshAxis;
-	objAxis.pTransform = &mTransformAxis;
-	objAxis.pMaterial = &mMaterialAxis;
-	objAxis.pDrawable = &mDrawableAxis;
+	objAxis.SetMesh(&mMeshAxis);
+	objAxis.SetTransform(&mTransformAxis);
+	objAxis.SetMaterial(&mMaterialAxis);
+	objAxis.SetDrawable(&mDrawableAxis);
 
-	objCamera.pCamera = &mCamera;
-	objCamera.pFrameUniform = &mFrameUniform;
+	objCamera.SetCamera(&mCamera);
+	objCamera.ConnectFrameUniform(&mFrameUniform);
 
-	objLight.pLight = &mLight;
-	objLight.pSceneUniform = &mSceneUniform;
+	objLight.SetLight(&mLight);
+	objLight.ConnectSceneUniform(&mSceneUniform);
 	
 	if (!objVolume.InitObject(d3d11Device, d3d11DevCon)) return false;
-	printf("objVolume initiated!\n");
 	if (!objAxis.InitObject(d3d11Device, d3d11DevCon)) return false;
-	printf("objAxis initiated!\n");
 	if (!objCamera.InitObject(d3d11Device, d3d11DevCon)) return false;
-	printf("objCamera initiated!\n");
 	if (!objLight.InitObject(d3d11Device, d3d11DevCon)) return false;
-	printf("objLight initiated!\n");
-
 	if (!mFrameUniform.InitFrameUniform(d3d11Device, d3d11DevCon)) return false;
 	if (!mSceneUniform.InitSceneUniform(d3d11Device, d3d11DevCon)) return false;
 
@@ -393,6 +392,7 @@ void UpdateScene()
 	objLight.UpdateObject(d3d11DevCon);
 
 	frame++;
+	mFrameUniform.ApplyFrameNum(frame);
 }
 
 void DrawScene()
@@ -404,8 +404,7 @@ void DrawScene()
 	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	//Draw Call
-	objVolume.DrawObjectTriangleList(d3d11DevCon);
-	objAxis.DrawObjectLineList(d3d11DevCon);
+	grpDrawable.Draw(d3d11DevCon);
 
 	//Present the backbuffer to the screen
 	SwapChain->Present(0, 0);

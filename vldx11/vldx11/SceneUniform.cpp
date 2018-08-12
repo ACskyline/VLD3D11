@@ -52,15 +52,20 @@ void SceneUniform::SetSceneUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetSceneUniformBufferPS(d3d11DevCon);
 }
 
-void SceneUniform::SetLight(Light* pLight)
+void SceneUniform::ApplyLight(Light* pLight)
 {
 	sceneUniformData.lightCol = pLight->col;
 	sceneUniformData.lightPos = pLight->pos;
 }
 
-void SceneUniform::SetCamera(Camera* pCamera)
+void SceneUniform::ApplyCamera(Camera* pCamera)
 {
 	sceneUniformData.farClip = pCamera->farClipPlane;
+}
+
+void SceneUniform::ApplyStep(uint32_t step)
+{
+	sceneUniformData.step = step;
 }
 
 bool SceneUniform::InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)

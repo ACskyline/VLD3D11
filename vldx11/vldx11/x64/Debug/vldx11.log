@@ -1,4 +1,48 @@
-﻿  Object.cpp
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(25): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(29): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+﻿  Drawable.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  DrawableGroup.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  FrameUniform.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  Object.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  SceneUniform.cpp
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  main.cpp
+  d:\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(42): warning C4305: 'argument': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(303): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(307): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(311): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(315): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(319): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(323): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(327): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(328): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(332): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(333): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(337): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(338): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(342): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(343): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(347): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(348): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(352): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(353): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(358): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(360): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(366): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(370): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(372): warning C4305: '=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(374): warning C4305: '=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(379): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(434): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
+  Generating Code...
   vldx11.vcxproj -> E:\MyProjects\vld3d11\VLD3D11\vldx11\x64\Debug\vldx11.exe

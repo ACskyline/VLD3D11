@@ -77,10 +77,25 @@ void FrameUniform::SetVP_INV(Camera* pCamera)
 	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
 }
 
-void FrameUniform::SetCamera(Camera* pCamera)
+void FrameUniform::ApplyCamera(Camera* pCamera)
 {
 	frameUniformData.cameraPos = pCamera->position;
 	SetVP_INV(pCamera);
+}
+
+void FrameUniform::ApplyCol(float r, float g, float b, float a)
+{
+	frameUniformData.COL = XMFLOAT4(r, g, b, a);
+}
+
+void FrameUniform::ApplyIntensity(float intensity)
+{
+	frameUniformData.intensity = intensity;
+}
+
+void FrameUniform::ApplyFrameNum(uint32_t frameNum)
+{
+	frameUniformData.frameNum = frameNum;
 }
 
 bool FrameUniform::InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)

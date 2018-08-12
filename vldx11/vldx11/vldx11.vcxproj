@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Drawable.cpp" />
+    <ClCompile Include="DrawableGroup.cpp" />
     <ClCompile Include="FrameUniform.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Drawable.h" />
+    <ClInclude Include="DrawableGroup.h" />
     <ClInclude Include="FrameUniform.h" />
     <ClInclude Include="GlobalInclude.h" />
     <ClInclude Include="Light.h" />

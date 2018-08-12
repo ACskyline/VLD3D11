@@ -26,12 +26,15 @@ public:
 	void SetFrameUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
 	void SetFrameUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void SetCamera(Camera* pCamera);
+	void ApplyCamera(Camera* pCamera);
+	void ApplyCol(float r, float g, float b, float a);
+	void ApplyIntensity(float intensity);
+	void ApplyFrameNum(uint32_t frameNum);
 	bool InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
 
-	FrameUniformData frameUniformData;
-
 private:
+
+	FrameUniformData frameUniformData;
 	ID3D11Buffer * frameUniformBuffer;
 	void SetVP(Camera* pCamera);
 	void SetVP_INV(Camera* pCamera);

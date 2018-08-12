@@ -25,14 +25,15 @@ public:
 	void SetSceneUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
 	void SetSceneUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetSceneUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void SetLight(Light* pLight);
-	void SetCamera(Camera* pCamera);
+	void ApplyLight(Light* pLight);
+	void ApplyCamera(Camera* pCamera);
+	void ApplyStep(uint32_t step);
 	bool InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
-
-	SceneUniformData sceneUniformData;
+	
 
 private:
 
+	SceneUniformData sceneUniformData;
 	ID3D11Buffer* sceneUniformBuffer;
 };
 
