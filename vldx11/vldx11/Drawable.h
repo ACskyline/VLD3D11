@@ -14,9 +14,16 @@ class Drawable
 		XMFLOAT4X4 M;
 		XMFLOAT4X4 M_INV;
 		XMFLOAT4 COL;
+		ObjectUniformData() :
+			M(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+			M_INV(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+			COL(XMFLOAT4(1, 1, 1, 1))
+		{}
 	};
 public:
-	Drawable(uint8_t _type);
+	enum DrawableType { TrianlgeList, LineList };
+
+	Drawable(DrawableType _type);
 	~Drawable();
 	bool CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh);
 	void VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh);
@@ -33,7 +40,7 @@ public:
 
 private:
 	ObjectUniformData objectUniformData;
-	uint8_t type;
+	DrawableType type;
 	Object* pObject;
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;

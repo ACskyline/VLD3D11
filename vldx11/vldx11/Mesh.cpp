@@ -1,25 +1,23 @@
 #include "Mesh.h"
 
-Mesh::Mesh() : type(0), vertexNum(0), indexNum(0), vertices(nullptr), indices(nullptr)
+Mesh::Mesh(MeshType _type, uint32_t _vertexNum, uint32_t _indexNum, Vertex* _vertices, Index* _indices) : 
+	type(_type)
 {
-
-}
-
-Mesh::Mesh(uint8_t _type, uint32_t _vertexNum, uint32_t _indexNum, Vertex* _vertices, Index* _indices)
-{
-	type = _type;
-	switch (type)
+	if (type == MeshType::Cube)
 	{
-	case 0://cube
 		InitCube();
-		break;
-	case 1:
+	}
+	else if (type == MeshType::Quad)
+	{
 		InitSquare();
-		break;
-	case 2:
+	}
+	else if (type == MeshType::Axis)
+	{
 		InitAxis();
-	default:
-		break;
+	}
+	else if (type == MeshType::Grid)
+	{
+		InitGrid();
 	}
 }
 
@@ -27,6 +25,37 @@ Mesh::~Mesh()
 {
 	MY_DELETE_ARRAY(vertices);
 	MY_DELETE_ARRAY(indices);
+}
+
+void Mesh::InitGrid()
+{
+	vertexNum = 40;
+	indexNum = 44;
+	vertices = new Vertex[vertexNum];
+	indices = new Index[indexNum];
+
+	//11 lines along z axis
+	for (int i = 0; i < 11; i++)
+	{
+		vertices[i * 2] = Vertex(-5 + i, 0, -5, 1, 1, 1, 1);
+		vertices[i * 2 + 1] = Vertex(-5 + i, 0, 5, 1, 1, 1, 1);
+		indices[i * 2] = i * 2;
+		indices[i * 2 + 1] = i * 2 + 1;
+	}
+
+	//9 lines along x axis
+	for (int i = 0; i < 9; i++)
+	{
+		vertices[22 + i * 2] = Vertex(-5, 0, -4 + i, 1, 1, 1, 1);
+		vertices[22 + i * 2 + 1] = Vertex(5, 0, -4 + i, 1, 1, 1, 1);
+		indices[22 + i * 2] = 22 + i * 2;
+		indices[22 + i * 2 + 1] = 22 + i * 2 + 1;
+	}
+
+	indices[40] = 0;
+	indices[41] = 20;
+	indices[42] = 1;
+	indices[43] = 21;
 }
 
 void Mesh::InitAxis()

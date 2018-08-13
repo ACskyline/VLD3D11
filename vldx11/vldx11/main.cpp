@@ -30,12 +30,14 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Mesh mMeshVolume(0, 0, 0, nullptr, nullptr);
-Mesh mMeshAxis(2, 0, 0, nullptr, nullptr);
+Mesh mMeshVolume(Mesh::MeshType::Cube, 0, 0, nullptr, nullptr);
+Mesh mMeshAxis(Mesh::MeshType::Axis, 0, 0, nullptr, nullptr);
+Mesh mMeshGrid(Mesh::MeshType::Grid, 0, 0, nullptr, nullptr);
 Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialAxis(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Drawable mDrawableVolume(0);
-Drawable mDrawableAxis(1);
+Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
+Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList);
+Drawable mDrawableAxis(Drawable::DrawableType::LineList);
+Drawable mDrawableGrid(Drawable::DrawableType::LineList);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(8, 8, 8));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
@@ -46,7 +48,9 @@ Object objVolume;
 Object objLight;
 Object objCamera;
 Object objAxis;
-DrawableGroup grpDrawable;
+Object objGrid;
+DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
+DrawableGroup grpDrawableGizmo(DrawableGroup::DrawableGroupType::Gizmo);
 
 void InitConsole()
 {
@@ -245,9 +249,14 @@ bool InitLevel()
 	//Create and set buffers
 	mDrawableVolume.ApplyColor(1, 1, 1, 1);
 	mDrawableAxis.ApplyColor(1, 1, 1, 1);
+	mDrawableGrid.ApplyColor(1, 1, 1, 1);
 
-	grpDrawable.AddDrawable(&mDrawableVolume);
-	grpDrawable.AddDrawable(&mDrawableAxis);
+	grpDrawableVolume.AddDrawable(&mDrawableVolume);
+	grpDrawableVolume.InitDrawableGroup(d3d11Device);
+
+	grpDrawableGizmo.AddDrawable(&mDrawableAxis);
+	grpDrawableGizmo.AddDrawable(&mDrawableGrid);
+	grpDrawableGizmo.InitDrawableGroup(d3d11Device);
 
 	mFrameUniform.ApplyCol(1, 1, 1, 1);
 	mFrameUniform.ApplyIntensity(5.f);
@@ -259,10 +268,14 @@ bool InitLevel()
 	objVolume.SetTransform(&mTransformVolume);
 	objVolume.SetMaterial(&mMaterialVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
+
+	objGrid.SetMesh(&mMeshGrid);
+	objGrid.SetMaterial(&mMaterialGizmo);
+	objGrid.SetDrawable(&mDrawableGrid);
 	
 	objAxis.SetMesh(&mMeshAxis);
 	objAxis.SetTransform(&mTransformAxis);
-	objAxis.SetMaterial(&mMaterialAxis);
+	objAxis.SetMaterial(&mMaterialGizmo);
 	objAxis.SetDrawable(&mDrawableAxis);
 
 	objCamera.SetCamera(&mCamera);
@@ -273,6 +286,7 @@ bool InitLevel()
 	
 	if (!objVolume.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objAxis.InitObject(d3d11Device, d3d11DevCon)) return false;
+	if (!objGrid.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objCamera.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objLight.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!mFrameUniform.InitFrameUniform(d3d11Device, d3d11DevCon)) return false;
@@ -404,7 +418,8 @@ void DrawScene()
 	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	//Draw Call
-	grpDrawable.Draw(d3d11DevCon);
+	grpDrawableVolume.Draw(d3d11DevCon);
+	grpDrawableGizmo.Draw(d3d11DevCon);
 
 	//Present the backbuffer to the screen
 	SwapChain->Present(0, 0);

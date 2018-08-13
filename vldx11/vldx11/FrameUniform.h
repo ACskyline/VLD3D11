@@ -15,6 +15,14 @@ class FrameUniform
 		uint32_t PAD1;//padding
 		uint32_t PAD2;//padding
 		uint32_t PAD3;//padding
+		FrameUniformData() :
+			VP(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+			VP_INV(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+			COL(XMFLOAT4(1, 1, 1, 1)),
+			cameraPos(XMFLOAT3(0, 0, 0)),
+			intensity(0.f),
+			frameNum(0)
+		{}
 	};
 
 public:

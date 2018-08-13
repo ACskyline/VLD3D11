@@ -5,8 +5,9 @@
 class Mesh
 {
 public:
-	Mesh();
-	Mesh(uint8_t _type, uint32_t _vertexNum, uint32_t _indexNum, Vertex* _vertices, Index* _indices);
+	enum MeshType { Cube, Quad, Axis, Grid };
+
+	Mesh(MeshType _type, uint32_t _vertexNum, uint32_t _indexNum, Vertex* _vertices, Index* _indices);
 	~Mesh();
 
 	void PrintAll();
@@ -18,9 +19,11 @@ public:
 
 private:
 
-	uint8_t type;
+	MeshType type;
+
 	void InitCube();
 	void InitSquare();
 	void InitAxis();
+	void InitGrid();
 };
 

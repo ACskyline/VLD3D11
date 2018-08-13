@@ -49,7 +49,7 @@ using namespace std;
 struct Vertex
 {
 	Vertex() {}
-	Vertex(float x, float y, float z, float r, float g, float b, float a) : pos(x,y,z), col(r, g, b, a) {}
+	Vertex(float x, float y, float z, float r, float g, float b, float a) : pos(x, y, z), col(r, g, b, a) {}
 	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor) : Vertex(_pos, _nor, XMFLOAT4(1,1,1,1)) {}
 	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor, XMFLOAT4 _col) : pos(_pos), nor(_nor), col(_col) {}
 

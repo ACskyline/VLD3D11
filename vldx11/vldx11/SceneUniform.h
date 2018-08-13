@@ -14,6 +14,12 @@ class SceneUniform
 		uint32_t PAD1;//padding
 		uint32_t PAD2;//padding
 		uint32_t PAD3;//padding
+		SceneUniformData() :
+			lightCol(XMFLOAT4(1, 1, 1, 1)),
+			lightPos(XMFLOAT3(0, 0, 0)),
+			step(0),
+			farClip(0.f)
+		{}
 	};
 
 public:

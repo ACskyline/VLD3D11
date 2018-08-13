@@ -1,6 +1,7 @@
 #include "Material.h"
 
-Material::Material(wstring _vsName, wstring _psName, D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], uint8_t _vertLayoutDescSize) : vsName(_vsName), psName(_psName), vertLayoutDescSize(_vertLayoutDescSize)
+Material::Material(wstring _vsName, wstring _psName, D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], uint8_t _vertLayoutDescSize) : 
+	vsName(_vsName), psName(_psName), vertLayoutDescSize(_vertLayoutDescSize)
 {
 	vertLayoutDesc = new D3D11_INPUT_ELEMENT_DESC[vertLayoutDescSize];
 	for (int i = 0; i < vertLayoutDescSize; i++)

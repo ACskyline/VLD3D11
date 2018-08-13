@@ -1,6 +1,6 @@
 #include "Drawable.h"
 
-Drawable::Drawable(uint8_t _type) : vertexBuffer(nullptr), indexBuffer(nullptr), 
+Drawable::Drawable(DrawableType _type) : vertexBuffer(nullptr), indexBuffer(nullptr),
 objectUniformBuffer(nullptr), pObject(nullptr), type(_type)
 {
 }
@@ -93,9 +93,9 @@ void Drawable::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 
 void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
 {
-	if (type == 0)
+	if (type == DrawableType::TrianlgeList)
 		DrawTriangleList(d3d11DevCon, mesh, mat);
-	else if (type == 1)
+	else if (type == DrawableType::LineList)
 		DrawLineList(d3d11DevCon, mesh, mat);
 }
 
