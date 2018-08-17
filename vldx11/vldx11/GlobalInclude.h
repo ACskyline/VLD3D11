@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 #ifndef HALF_PI
 #define HALF_PI 1.570796326794896
@@ -49,9 +51,12 @@ using namespace std;
 struct Vertex
 {
 	Vertex() {}
-	Vertex(float x, float y, float z, float r, float g, float b, float a) : pos(x, y, z), col(r, g, b, a) {}
-	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor) : Vertex(_pos, _nor, XMFLOAT4(1,1,1,1)) {}
-	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor, XMFLOAT4 _col) : pos(_pos), nor(_nor), col(_col) {}
+	Vertex(float x, float y, float z, float r, float g, float b, float a) : Vertex(XMFLOAT3(x, y, z), XMFLOAT4(r, g, b, a)) {}
+	Vertex(XMFLOAT3 _pos, XMFLOAT4 _col) : Vertex(_pos, XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), _col) {}
+	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor) : Vertex(_pos, _nor, XMFLOAT2(0,0), XMFLOAT4(1,1,1,1)) {}
+	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor, XMFLOAT4 _col) : Vertex(_pos, _nor, XMFLOAT2(0, 0), _col) {}
+	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor, XMFLOAT2 _uv) : Vertex(_pos, _nor, _uv, XMFLOAT4(1, 1, 1, 1)) {}
+	Vertex(XMFLOAT3 _pos, XMFLOAT3 _nor, XMFLOAT2 _uv, XMFLOAT4 _col) : pos(_pos), nor(_nor), uv(_uv), col(_col) {}
 
 	XMFLOAT3 pos;
 	XMFLOAT4 col;

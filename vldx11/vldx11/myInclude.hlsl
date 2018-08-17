@@ -27,11 +27,20 @@ cbuffer SceneUniform : register(b2)
 	float FAR_CLIP;
 };
 
+struct a2v
+{
+	float3 pos : MYPOSITION;
+	float4 col : MYCOLOR;
+	float3 nor : MYNORMAL;
+	float2 uv : MYUV;
+};
+
 struct v2f
 {
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
 	float3 posW : TEXCOORD0;
+	float3 norW : TEXCOORD1;
 };
 
 //unit cube face intersection detection
@@ -146,7 +155,6 @@ float Phase(in float g, in float cosTheta)
 
 //	Classic Perlin 3D Noise 
 //	by Stefan Gustavson
-//
 float4 permute(float4 x)
 { 
 	return fmod(((x*34.0) + 1.0)*x, 289.0); 

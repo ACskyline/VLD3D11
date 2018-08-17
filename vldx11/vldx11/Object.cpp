@@ -38,6 +38,7 @@ bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11Dev
 	}
 	if (pDrawable != nullptr&&pMesh != nullptr)
 	{
+		if (!pMesh->InitMesh()) return false;
 		if (!pDrawable->CreateBuffer(d3d11Device, pMesh)) return false;
 		pDrawable->VertexIndexBufferData(d3d11DevCon, pMesh);
 		pDrawable->ObjectUniformBufferData(d3d11DevCon);

@@ -30,10 +30,10 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Mesh mMeshVolume(Mesh::MeshType::Cube, 0, 0, nullptr, nullptr);
-Mesh mMeshAxis(Mesh::MeshType::Axis, 0, 0, nullptr, nullptr);
-Mesh mMeshGrid(Mesh::MeshType::Grid, 0, 0, nullptr, nullptr);
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
+Mesh mMeshVolume(Mesh::MeshType::Sphere, 32, 32);
+Mesh mMeshAxis(Mesh::MeshType::Axis);
+Mesh mMeshGrid(Mesh::MeshType::Grid);
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelHalfLambert.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList);

@@ -1,19 +1,32 @@
-﻿  Mesh.cpp
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(26): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(30): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(40): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(49): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(107): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(108): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(109): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(110): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(111): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(112): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(113): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(114): warning C4305: 'argument': truncation from 'double' to 'float'
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(130): warning C4018: '<': signed/unsigned mismatch
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(169): warning C4018: '<': signed/unsigned mismatch
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\mesh.cpp(175): warning C4018: '<': signed/unsigned mismatch
+﻿  main.cpp
+  d:\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(28): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\globalinclude.h(32): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(44): warning C4305: 'argument': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(317): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(321): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(325): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(329): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(333): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(337): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(341): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(342): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(346): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(347): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(351): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(352): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(356): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(357): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(361): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(362): warning C4305: '-=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(366): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(367): warning C4305: '+=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(372): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(374): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(380): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(384): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(386): warning C4305: '=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(388): warning C4305: '=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(393): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(449): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
   vldx11.vcxproj -> E:\MyProjects\vld3d11\VLD3D11\vldx11\x64\Debug\vldx11.exe

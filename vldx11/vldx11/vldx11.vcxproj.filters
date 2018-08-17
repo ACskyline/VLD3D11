@@ -109,5 +109,8 @@
     <FxCompile Include="myInclude.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+    <FxCompile Include="myPixelHalfLambert.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
