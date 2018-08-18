@@ -1,22 +1,36 @@
 #include "Mesh.h"
 
 Mesh::Mesh(MeshType _type) : 
-	Mesh(_type, "no file", 0, 0)
+	Mesh(_type, "no file", 0, 0, 0)
 {
 }
 
 Mesh::Mesh(MeshType _type, string _fileName) :
-	Mesh(_type, _fileName, 0, 0)
+	Mesh(_type, _fileName, 0, 0, 0)
+{
+}
+
+Mesh::Mesh(MeshType _type, uint32_t _coneSegmentNum) :
+	Mesh(_type, "no file", 0, 0, _coneSegmentNum)
 {
 }
 
 Mesh::Mesh(MeshType _type, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum) :
-	Mesh(_type, "no file", _altitudeSegmentNum, _azimuthSegmentNum)
+	Mesh(_type, "no file", _altitudeSegmentNum, _azimuthSegmentNum, 0)
 {
 }
 
-Mesh::Mesh(MeshType _type, string _fileName, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum) :
-	type(_type), fileName(_fileName), altitudeSegmentNum(_altitudeSegmentNum), azimuthSegmentNum(_azimuthSegmentNum), vertexNum(0), indexNum(0), vertices(nullptr), indices(nullptr)
+Mesh::Mesh(MeshType _type, 
+	string _fileName, 
+	uint32_t _altitudeSegmentNum, 
+	uint32_t _azimuthSegmentNum, 
+	uint32_t _coneSegmentNum) :
+	type(_type), 
+	fileName(_fileName), 
+	altitudeSegmentNum(_altitudeSegmentNum), 
+	azimuthSegmentNum(_azimuthSegmentNum), 
+	coneSegmentNum(_coneSegmentNum),
+	vertexNum(0), indexNum(0), vertices(nullptr), indices(nullptr)
 {
 }
 
@@ -36,6 +50,10 @@ void Mesh::DestroyMesh()
 
 bool Mesh::InitMesh()
 {
+	if (type == MeshType::Cone)
+	{
+		return InitCone();
+	}
 	if (type == MeshType::Sphere)
 	{
 		return InitSphere();
@@ -64,6 +82,59 @@ bool Mesh::InitMesh()
 	return false;
 }
 
+//
+bool Mesh::InitCone()
+{
+	vertexNum = coneSegmentNum * 3 + coneSegmentNum * 2 + 1;
+	indexNum = coneSegmentNum * 3 * 2;
+	vertices = new Vertex[vertexNum];
+	indices = new Index[indexNum];
+
+	float deltaAngle = 360.f / coneSegmentNum;
+
+	for (uint32_t i = 0; i < coneSegmentNum; i++)
+	{
+		//radius is 0.5
+		uint32_t iNext = (i + 1) % coneSegmentNum;
+
+		float x = 0.5f * cosf(XMConvertToRadians(deltaAngle * i));
+		float z = 0.5f * sinf(XMConvertToRadians(deltaAngle * i));
+		float xNext = 0.5f * cosf(XMConvertToRadians(deltaAngle * iNext));
+		float zNext = 0.5f * sinf(XMConvertToRadians(deltaAngle * iNext));
+		float xNormal = 0.5f * cosf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
+		float zNormal = 0.5f * sinf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
+		
+		XMFLOAT3 nor = XMFLOAT3(xNormal / sqrtf(0.5*0.5 + 0.25*0.25),
+								0.25 / sqrtf(0.5*0.5 + 0.25*0.25),
+								zNormal / sqrtf(0.5*0.5 + 0.25*0.25));//can be replaced with calculated result but keeping it this way makes it clear
+
+		//for side triangle
+		vertices[i * 5] = Vertex(XMFLOAT3(x, -0.5, z), nor);
+		vertices[i * 5 + 1] = Vertex(XMFLOAT3(0, 0.5, 0), nor);
+		vertices[i * 5 + 2] = Vertex(XMFLOAT3(xNext, -0.5, zNext), nor);
+		//for bottom triangle
+		vertices[i * 5 + 3] = Vertex(XMFLOAT3(x, -0.5, z), XMFLOAT3(0, -1, 0));
+		vertices[i * 5 + 4] = Vertex(XMFLOAT3(xNext, -0.5, zNext), XMFLOAT3(0, -1, 0));
+	}
+
+	vertices[vertexNum - 1] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
+
+	for (uint32_t i = 0; i < coneSegmentNum; i++)
+	{
+		//side triangle
+		indices[i * 6] = i * 5;
+		indices[i * 6 + 1] = i * 5 + 1;
+		indices[i * 6 + 2] = i * 5 + 2;
+
+		//bottom triangle
+		indices[i * 6 + 3] = i * 5 + 3;
+		indices[i * 6 + 4] = i * 5 + 4;
+		indices[i * 6 + 5] = vertexNum - 1;
+	}
+
+	return true;
+}
+
 //adjacent triangles share vertices
 bool Mesh::InitSphere()
 {
@@ -80,15 +151,15 @@ bool Mesh::InitSphere()
 	{
 		for (uint32_t j = 1; j <= altitudeSegmentNum - 1; j++)//exclude polar vertex
 		{
-			float y = cosf(XMConvertToRadians(j * deltaAltitudeAngle));
-			float xoz = fabsf(sinf(XMConvertToRadians(j * deltaAltitudeAngle)));
+			float y = 0.5f * cosf(XMConvertToRadians(j * deltaAltitudeAngle));//radius is 0.5
+			float xoz = 0.5f * fabsf(sinf(XMConvertToRadians(j * deltaAltitudeAngle)));//radius is 0.5
 			float x = xoz * cosf(XMConvertToRadians(i * deltaAzimuthAngle));
 			float z = xoz * sinf(XMConvertToRadians(i * deltaAzimuthAngle));
-			vertices[count++] = Vertex(XMFLOAT3(x, y, z), XMFLOAT3(x, y, z));
+			vertices[count++] = Vertex(XMFLOAT3(x, y, z), XMFLOAT3(2 * x, 2 * y, 2 * z));//normal is twice as long as radius
 		}
 	}
-	vertices[count++] = Vertex(XMFLOAT3(0, 1, 0), XMFLOAT3(0, 1, 0));//north pole
-	vertices[count++] = Vertex(XMFLOAT3(0, -1, 0), XMFLOAT3(0, -1, 0));//south pole
+	vertices[count++] = Vertex(XMFLOAT3(0, 0.5f, 0), XMFLOAT3(0, 1, 0));//north pole
+	vertices[count++] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
 
 	count = 0;
 	for (uint32_t i = 0; i < azimuthSegmentNum; i++)

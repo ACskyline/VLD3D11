@@ -30,7 +30,7 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Mesh mMeshVolume(Mesh::MeshType::Sphere, 32, 32);
+Mesh mMeshVolume(Mesh::MeshType::Cone, 12);
 Mesh mMeshAxis(Mesh::MeshType::Axis);
 Mesh mMeshGrid(Mesh::MeshType::Grid);
 Material mMaterialVolume(L"myVert.hlsl", L"myPixelHalfLambert.hlsl", layout, ARRAYSIZE(layout));
@@ -40,7 +40,7 @@ Drawable mDrawableAxis(Drawable::DrawableType::LineList);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(8, 8, 8));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
-OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 120, Width / (float)Height, 0.01f, 100.0f);
+OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
 Light mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(0.8, 0.7, 0, 1));
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;

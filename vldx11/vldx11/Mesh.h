@@ -5,10 +5,11 @@
 class Mesh
 {
 public:
-	enum MeshType { Sphere, Cube, Quad, Axis, Grid, OBJ };
+	enum MeshType { Sphere, Cube, Cone, Quad, Axis, Grid, OBJ };
 
 	Mesh(MeshType _type);
 	Mesh(MeshType _type, string _fileName);
+	Mesh(MeshType _type, uint32_t _coneSegmentNum);
 	Mesh(MeshType _type, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum);
 	~Mesh();
 
@@ -22,7 +23,7 @@ public:
 	Index* indices;
 
 private:
-	Mesh(MeshType _type, string _fileName, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum);
+	Mesh(MeshType _type, string _fileName, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum, uint32_t _coneSegmentNum);
 
 	struct Point
 	{
@@ -35,7 +36,9 @@ private:
 	string fileName;
 	uint32_t altitudeSegmentNum;
 	uint32_t azimuthSegmentNum;
+	uint32_t coneSegmentNum;
 
+	bool InitCone();
 	bool InitSphere();
 	bool InitCube();
 	bool InitSquare();
