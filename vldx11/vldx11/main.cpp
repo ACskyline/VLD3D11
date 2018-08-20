@@ -30,15 +30,15 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Mesh mMeshVolume(Mesh::MeshType::Cone, 12);
+Mesh mMeshVolume(Mesh::MeshType::Cube);
 Mesh mMeshAxis(Mesh::MeshType::Axis);
 Mesh mMeshGrid(Mesh::MeshType::Grid);
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelHalfLambert.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFog.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList);
-Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(8, 8, 8));
+Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10, 10));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
 Light mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(0.8, 0.7, 0, 1));
@@ -314,19 +314,19 @@ void DetectInput()
 
 	if (keyboardState[DIK_W] & 0x80)
 	{
-		mTransformVolume.position.y += 0.0005;
+		mTransformVolume.position.y += 0.001;
 	}
 	if (keyboardState[DIK_S] & 0x80)
 	{
-		mTransformVolume.position.y -= 0.0005;
+		mTransformVolume.position.y -= 0.001;
 	}
 	if (keyboardState[DIK_A] & 0x80)
 	{
-		mTransformVolume.position.x -= 0.0005;
+		mTransformVolume.position.x -= 0.001;
 	}
 	if (keyboardState[DIK_D] & 0x80)
 	{
-		mTransformVolume.position.x += 0.0005;
+		mTransformVolume.position.x += 0.001;
 	}
 	if (keyboardState[DIK_Q] & 0x80)
 	{
@@ -391,6 +391,8 @@ void DetectInput()
 	if (mouseCurrState.lZ != 0)
 	{
 		mCamera.distance -= mouseCurrState.lZ * 0.01;
+		if (mCamera.distance < 0 + EPSILON)
+			mCamera.distance = 0.1 + EPSILON;
 	}
 
 	mouseLastState = mouseCurrState;

@@ -22,8 +22,8 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 
 	if (type == DrawableGroupType::VolumeLight)//for volume light
 	{
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;//default, but if comment this, create function will return an error but still perform as expected
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;//default, but if comment this, create function will return an error but still perform as expected -> using cd3d11 description with default value fix this
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;//rasterizerDesc.CullMode = D3D11_CULL_BACK;//default
 		//rasterizerDesc.FrontCounterClockwise = FALSE;//default
 		//rasterizerDesc.DepthBias = 0;//default
 		//rasterizerDesc.SlopeScaledDepthBias = 0.0f;//default

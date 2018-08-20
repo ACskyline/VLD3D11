@@ -112,5 +112,11 @@
     <FxCompile Include="myPixelHalfLambert.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+    <FxCompile Include="myPixelSphereFog.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelConeFog.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

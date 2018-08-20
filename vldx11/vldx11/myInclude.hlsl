@@ -1,6 +1,7 @@
 #define INFINITE_MIN -1000
 #define INFINITE_MAX 1000
 #define PI 3.14159265
+#define EPSILON 0.0000001
 
 cbuffer ObjectUniform : register(b0)
 {
@@ -44,7 +45,7 @@ struct v2f
 };
 
 //unit cube face intersection detection
-bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t, inout float3 p)
+bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t)
 {
 	float3 nor = float3(0, 0, 0);
 	float3 pos = float3(0, 0, 0);
@@ -82,7 +83,7 @@ bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t
 
 	if (mul(dir, nor) == 0) return false;
 	t = -mul(ori - pos, nor) / mul(dir, nor);
-	p = ori + t * dir;
+	float3 p = ori + t * dir;
 
 	switch (face)
 	{
@@ -114,35 +115,137 @@ bool IntersectCube(in float3 ori, in float3 dir, inout float3 start, inout float
 {
 	float minT = INFINITE_MAX;
 	float maxT = INFINITE_MIN;
-	float3 minP = float3(0, 0, 0);
-	float3 maxP = float3(0, 0, 0);
 
 	bool result = false;
+	bool potential = false;
 
 	for (uint i = 0; i<6; i++)
 	{
 		float t = 0;
-		float3 p = float3(0, 0, 0);
-		if (IntersectCubeFace(i, ori, dir, t, p))
+		if (IntersectCubeFace(i, ori, dir, t))
 		{
 			if (t<minT)
 			{
 				minT = t;
-				minP = p;
 			}
 			if (t>maxT)
 			{
 				maxT = t;
-				maxP = p;
 			}
+			potential = true;
+		}
+	}
+
+	if (potential)
+	{
+		if (maxT >= 0)
+		{
+			minT = max(0, minT);
+			start = ori + minT * dir;
+			finish = ori + maxT * dir;
 			result = true;
 		}
 	}
 
-	if (result)
+	return result;
+}
+
+//unit sphere intersection detection
+bool IntersectSphere(in float3 ori, in float3 dir, inout float3 start, inout float3 finish)
+{
+	bool result = false;
+
+	float A = dot(dir, dir);
+	float B = 2 * dot(ori, dir);
+	float C = dot(ori, ori) - 0.25;
+
+	float delta = B * B - 4 * A * C;
+
+	if (delta >= 0)
 	{
-		start = minP;
-		finish = maxP;
+		float t1 = (-B - sqrt(delta)) / (2 * A);
+		float t2 = (-B + sqrt(delta)) / (2 * A);
+		
+		float tMin = t1 < t2 ? t1 : t2;
+		float tMax = t1 < t2 ? t2 : t1;
+
+		if (tMax >= 0)
+		{
+			tMin = max(0, tMin);
+
+			start = ori + tMin * dir;
+			finish = ori + tMax * dir;
+
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+//intersection detection with the bottom face of unit cone
+bool IntersectConeCircle(in float3 ori, in float3 dir, inout float t)
+{
+	bool result = false;
+
+	t = (-0.5 - ori.y) / dir.y;
+
+	float x = ori.x + t * dir.x;
+	float z = ori.z + t * dir.z;
+
+	if (x * x + z * z <= 0.25)
+	{
+		result = true;
+	}
+
+	return result;
+}
+
+//unit cone intersection detection(tip at (0,0.5,0), radius is 0.5, height is 1)
+bool IntersectCone(in float3 ori, in float3 dir, inout float3 start, inout float3 finish)
+{
+	bool result = false;
+
+	float A = dir.x * dir.x + dir.z * dir.z - 0.25 * dir.y * dir.y;
+	float B = 2 * (ori.x * dir.x + ori.z * dir.z - 0.25 * ori.y * dir.y) + 0.25 * dir.y;
+	float C = ori.x * ori.x + ori.z * ori.z - 0.25 * ori.y * ori.y - 0.0625 + 0.25 * ori.y;
+
+	float delta = B * B - 4 * A * C;
+
+	if (delta >= 0)
+	{
+		float t1 = (-B - sqrt(delta)) / (2 * A);
+		float t2 = (-B + sqrt(delta)) / (2 * A);
+
+		float tMin = t1 < t2 ? t1 : t2;
+		float tMax = t1 < t2 ? t2 : t1;
+
+		float tRangeMin = dir.y > 0 ? (-0.5 - ori.y) / dir.y : (0.5 - ori.y) / dir.y;
+		float tRangeMax = dir.y > 0 ? (0.5 - ori.y) / dir.y : (-0.5 - ori.y) / dir.y;
+
+		if ((tMin < tRangeMin || tMin > tRangeMax) && (tMax < tRangeMin || tMax > tRangeMax)) return false;
+		
+		float t = 0;
+
+		if ((tMin < tRangeMin || tMin > tRangeMax) && IntersectConeCircle(ori, dir, t))
+		{
+			tMin = min(tMax, t);
+			tMax = max(tMax, t);
+		}
+
+		if ((tMax < tRangeMin || tMax > tRangeMax) && IntersectConeCircle(ori, dir, t))
+		{
+			tMax = max(tMin, t);
+			tMin = min(tMin, t);
+		}
+
+		if (tMax >= 0)
+		{
+			tMin = max(0, tMin);
+			start = ori + tMin * dir;
+			finish = ori + tMax * dir;
+			result = true;
+		}
 	}
 
 	return result;

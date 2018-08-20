@@ -28,5 +28,6 @@ e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(384): warning C4244: '+=': 
 e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(386): warning C4305: '=': truncation from 'double' to 'float'
 e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(388): warning C4305: '=': truncation from 'double' to 'float'
 e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(393): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(449): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(395): warning C4305: '=': truncation from 'double' to 'float'
+e:\myprojects\vld3d11\vld3d11\vldx11\vldx11\main.cpp(451): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
   vldx11.vcxproj -> E:\MyProjects\vld3d11\VLD3D11\vldx11\x64\Debug\vldx11.exe
