@@ -1,5 +1,6 @@
 #pragma once
 #include "GlobalInclude.h"
+#include "Texture.h"
 
 class Material
 {
@@ -13,6 +14,14 @@ public:
 	void SetLayoutTriangleList(ID3D11DeviceContext* d3d11DevCon);
 	void SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon);
 
+	bool InitMaterial(ID3D11Device* d3d11Device);
+	bool IsInitiated();
+
+	void SetTexture(Texture* pTex);
+	Texture* GetTexture();
+	bool HasTexture();
+	void UseTexture(ID3D11DeviceContext* d3d11DevCon);
+
 private:
 	wstring vsName;
 	wstring psName;
@@ -23,5 +32,7 @@ private:
 	ID3D11InputLayout* vertLayout;
 	D3D11_INPUT_ELEMENT_DESC* vertLayoutDesc;
 	uint8_t vertLayoutDescSize;
+	bool initiated;
+	Texture* pTex;
 };
 

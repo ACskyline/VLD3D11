@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="DDSTextureLoader">
+      <UniqueIdentifier>{e492c8a7-49b6-4925-aa9f-3680613ebab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WICTextureLoader">
+      <UniqueIdentifier>{ebfd568c-a1c7-4056-a26b-411d75a1d8df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,6 +59,18 @@
     </ClCompile>
     <ClCompile Include="DrawableGroup.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader\WICTextureLoader.cpp">
+      <Filter>WICTextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
+      <Filter>DDSTextureLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +113,18 @@
     <ClInclude Include="DrawableGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader\WICTextureLoader.h">
+      <Filter>WICTextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
+      <Filter>DDSTextureLoader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="myPixel.hlsl">
@@ -116,6 +146,9 @@
       <Filter>Source Files</Filter>
     </FxCompile>
     <FxCompile Include="myPixelConeFog.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelTexture.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>

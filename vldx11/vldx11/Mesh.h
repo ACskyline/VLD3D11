@@ -16,6 +16,7 @@ public:
 	bool InitMesh();
 	void DestroyMesh();
 	void PrintAll();
+	bool IsInitiated();
 
 	uint32_t vertexNum;
 	uint32_t indexNum;
@@ -23,7 +24,7 @@ public:
 	Index* indices;
 
 private:
-	Mesh(MeshType _type, string _fileName, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum, uint32_t _coneSegmentNum);
+	Mesh(MeshType _type, string _fileName, uint32_t _altitudeSegmentNum, uint32_t _azimuthSegmentNum, uint32_t _segmentNum);
 
 	struct Point
 	{
@@ -36,7 +37,8 @@ private:
 	string fileName;
 	uint32_t altitudeSegmentNum;
 	uint32_t azimuthSegmentNum;
-	uint32_t coneSegmentNum;
+	uint32_t segmentNum;
+	bool initiated;
 
 	bool InitCone();
 	bool InitSphere();

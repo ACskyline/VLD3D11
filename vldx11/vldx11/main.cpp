@@ -1,5 +1,3 @@
-#include <windows.h>
-#include <dinput.h>
 #include "Object.h"
 #include "OrbitCamera.h"
 #include "DrawableGroup.h"
@@ -24,6 +22,7 @@ HWND hwnd = NULL;
 const int Width = 800;
 const int Height = 600;
 uint32_t frame = 0;
+XMVECTORF32 bgColor{ 0.3f, 0.3f, 0.8f, 1.f };
 
 IDirectInputDevice8* DIKeyboard;
 IDirectInputDevice8* DIMouse;
@@ -32,16 +31,18 @@ LPDIRECTINPUT8 DirectInput;
 
 Mesh mMeshVolume(Mesh::MeshType::Cube);
 Mesh mMeshAxis(Mesh::MeshType::Axis);
-Mesh mMeshGrid(Mesh::MeshType::Grid);
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFog.hlsl", layout, ARRAYSIZE(layout));
+Mesh mMeshGrid(Mesh::MeshType::Grid, 50);
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexture.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList);
-Drawable mDrawableAxis(Drawable::DrawableType::LineList);
-Drawable mDrawableGrid(Drawable::DrawableType::LineList);
+Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
+Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
+Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10, 10));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
+Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
 Light mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(0.8, 0.7, 0, 1));
+Texture mTex(Texture::Albedo, L"checkerboard.png");
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
 Object objVolume;
@@ -246,7 +247,10 @@ bool InitLevel()
 	printf("init Level start!\n");
 	InitViewport();
 
-	//Create and set buffers
+	//texture
+	mMaterialVolume.SetTexture(&mTex);
+
+	//drawable
 	mDrawableVolume.ApplyColor(1, 1, 1, 1);
 	mDrawableAxis.ApplyColor(1, 1, 1, 1);
 	mDrawableGrid.ApplyColor(1, 1, 1, 1);
@@ -264,18 +268,13 @@ bool InitLevel()
 
 	mSceneUniform.ApplyStep(50);
 
-	objVolume.SetMesh(&mMeshVolume);
 	objVolume.SetTransform(&mTransformVolume);
-	objVolume.SetMaterial(&mMaterialVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
 
-	objGrid.SetMesh(&mMeshGrid);
-	objGrid.SetMaterial(&mMaterialGizmo);
+	objGrid.SetTransform(&mTransformGrid);
 	objGrid.SetDrawable(&mDrawableGrid);
 	
-	objAxis.SetMesh(&mMeshAxis);
 	objAxis.SetTransform(&mTransformAxis);
-	objAxis.SetMaterial(&mMaterialGizmo);
 	objAxis.SetDrawable(&mDrawableAxis);
 
 	objCamera.SetCamera(&mCamera);
@@ -414,9 +413,7 @@ void UpdateScene()
 void DrawScene()
 {
 	//Clear our backbuffer to the updated color
-	XMVECTORF32 bgColorV { 0,0,0,1 };
-
-	d3d11DevCon->ClearRenderTargetView(renderTargetView, bgColorV);
+	d3d11DevCon->ClearRenderTargetView(renderTargetView, bgColor);
 	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	//Draw Call

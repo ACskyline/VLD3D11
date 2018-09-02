@@ -10,8 +10,8 @@ Mesh::Mesh(MeshType _type, string _fileName) :
 {
 }
 
-Mesh::Mesh(MeshType _type, uint32_t _coneSegmentNum) :
-	Mesh(_type, "no file", 0, 0, _coneSegmentNum)
+Mesh::Mesh(MeshType _type, uint32_t _segmentNum) :
+	Mesh(_type, "no file", 0, 0, _segmentNum)
 {
 }
 
@@ -24,13 +24,13 @@ Mesh::Mesh(MeshType _type,
 	string _fileName, 
 	uint32_t _altitudeSegmentNum, 
 	uint32_t _azimuthSegmentNum, 
-	uint32_t _coneSegmentNum) :
+	uint32_t _segmentNum) :
 	type(_type), 
 	fileName(_fileName), 
 	altitudeSegmentNum(_altitudeSegmentNum), 
 	azimuthSegmentNum(_azimuthSegmentNum), 
-	coneSegmentNum(_coneSegmentNum),
-	vertexNum(0), indexNum(0), vertices(nullptr), indices(nullptr)
+	segmentNum(_segmentNum),
+	vertexNum(0), indexNum(0), vertices(nullptr), indices(nullptr), initiated(false)
 {
 }
 
@@ -50,52 +50,55 @@ void Mesh::DestroyMesh()
 
 bool Mesh::InitMesh()
 {
+	DestroyMesh();
+	initiated = false;
+
 	if (type == MeshType::Cone)
 	{
-		return InitCone();
+		initiated = InitCone();
 	}
 	if (type == MeshType::Sphere)
 	{
-		return InitSphere();
+		initiated = InitSphere();
 	}
 	if (type == MeshType::Cube)
 	{
-		return InitCube();
+		initiated = InitCube();
 	}
 	if (type == MeshType::Quad)
 	{
-		return InitSquare();
+		initiated = InitSquare();
 	}
 	if (type == MeshType::Axis)
 	{
-		return InitAxis();
+		initiated = InitAxis();
 	}
 	if (type == MeshType::Grid)
 	{
-		return InitGrid();
+		initiated = InitGrid();
 	}
 	if (type == MeshType::OBJ)
 	{
-		return InitOBJ(fileName);
+		initiated = InitOBJ(fileName);
 	}
 
-	return false;
+	return initiated;
 }
 
 //
 bool Mesh::InitCone()
 {
-	vertexNum = coneSegmentNum * 3 + coneSegmentNum * 2 + 1;
-	indexNum = coneSegmentNum * 3 * 2;
+	vertexNum = segmentNum * 3 + segmentNum * 2 + 1;
+	indexNum = segmentNum * 3 * 2;
 	vertices = new Vertex[vertexNum];
 	indices = new Index[indexNum];
 
-	float deltaAngle = 360.f / coneSegmentNum;
+	float deltaAngle = 360.f / segmentNum;
 
-	for (uint32_t i = 0; i < coneSegmentNum; i++)
+	for (uint32_t i = 0; i < segmentNum; i++)
 	{
 		//radius is 0.5
-		uint32_t iNext = (i + 1) % coneSegmentNum;
+		uint32_t iNext = (i + 1) % segmentNum;
 
 		float x = 0.5f * cosf(XMConvertToRadians(deltaAngle * i));
 		float z = 0.5f * sinf(XMConvertToRadians(deltaAngle * i));
@@ -119,7 +122,7 @@ bool Mesh::InitCone()
 
 	vertices[vertexNum - 1] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
 
-	for (uint32_t i = 0; i < coneSegmentNum; i++)
+	for (uint32_t i = 0; i < segmentNum; i++)
 	{
 		//side triangle
 		indices[i * 6] = i * 5;
@@ -200,33 +203,35 @@ bool Mesh::InitOBJ(string fileName)
 
 bool Mesh::InitGrid()
 {
-	vertexNum = 40;
-	indexNum = 44;
+	vertexNum = 4 * segmentNum;
+	indexNum = vertexNum + 4;
 	vertices = new Vertex[vertexNum];
 	indices = new Index[indexNum];
 
-	//11 lines along z axis
-	for (int i = 0; i < 11; i++)
+	//segmentNum + 1 lines along z axis
+	uint32_t count = 0;
+	for (uint32_t i = 0; i < segmentNum + 1; i++)
 	{
-		vertices[i * 2] = Vertex(-5 + i, 0, -5, 1, 1, 1, 1);
-		vertices[i * 2 + 1] = Vertex(-5 + i, 0, 5, 1, 1, 1, 1);
+		vertices[i * 2] = Vertex(-(int)segmentNum / 2 + (int)i, 0, -(int)segmentNum / 2, 1, 1, 1, 1);
+		vertices[i * 2 + 1] = Vertex(-(int)segmentNum / 2 + (int)i, 0, (int)segmentNum / 2, 1, 1, 1, 1);
 		indices[i * 2] = i * 2;
 		indices[i * 2 + 1] = i * 2 + 1;
+		count += 2;
 	}
 
-	//9 lines along x axis
-	for (int i = 0; i < 9; i++)
+	//segmentNum - 1 lines along x axis
+	for (uint32_t i = 0; i < segmentNum - 1; i++)
 	{
-		vertices[22 + i * 2] = Vertex(-5, 0, -4 + i, 1, 1, 1, 1);
-		vertices[22 + i * 2 + 1] = Vertex(5, 0, -4 + i, 1, 1, 1, 1);
-		indices[22 + i * 2] = 22 + i * 2;
-		indices[22 + i * 2 + 1] = 22 + i * 2 + 1;
+		vertices[count + i * 2] = Vertex(-(int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
+		vertices[count + i * 2 + 1] = Vertex((int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
+		indices[count + i * 2] = count + i * 2;
+		indices[count + i * 2 + 1] = count + i * 2 + 1;
 	}
 
-	indices[40] = 0;
-	indices[41] = 20;
-	indices[42] = 1;
-	indices[43] = 21;
+	indices[indexNum-4] = 0;
+	indices[indexNum-3] = 2 * segmentNum;
+	indices[indexNum-2] = 1;
+	indices[indexNum-1] = 1 + 2 * segmentNum;
 
 	return true;
 }
@@ -288,18 +293,23 @@ bool Mesh::InitCube()
 						XMFLOAT4(0.9,0.9,0.5,1),
 						XMFLOAT4(0.9,0.5,0.5,1) };
 
+	XMFLOAT2 uv[4] = { XMFLOAT2(0.0, 0.0),
+					   XMFLOAT2(0.0, 1.0),
+					   XMFLOAT2(1.0, 1.0),
+					   XMFLOAT2(1.0, 0.0) };
+
 	for (int i = 0; i < 4; i++)
 	{
-		vertices[i * 4 + 0] = Vertex(pos[0 + i], nor[i], col[0 + i]);
-		vertices[i * 4 + 1] = Vertex(pos[(4 - i) % 4 + 4], nor[i], col[(4 - i) % 4 + 4]);
-		vertices[i * 4 + 2] = Vertex(pos[7 - i], nor[i], col[7 - i]);
-		vertices[i * 4 + 3] = Vertex(pos[(1 + i) % 4], nor[i], col[(1 + i) % 4]);
+		vertices[i * 4 + 0] = Vertex(pos[0 + i], nor[i], uv[0], col[0 + i]);
+		vertices[i * 4 + 1] = Vertex(pos[(4 - i) % 4 + 4], nor[i], uv[1], col[(4 - i) % 4 + 4]);
+		vertices[i * 4 + 2] = Vertex(pos[7 - i], nor[i], uv[2], col[7 - i]);
+		vertices[i * 4 + 3] = Vertex(pos[(1 + i) % 4], nor[i], uv[3], col[(1 + i) % 4]);
 	}
 
 	for (int i = 0; i < 4; i++)
 	{
-		vertices[16 + i] = Vertex(pos[i], nor[4], col[i]);
-		vertices[20 + i] = Vertex(pos[i + 4], nor[5], col[i + 4]);
+		vertices[16 + i] = Vertex(pos[i], nor[4], uv[i], col[i]);
+		vertices[20 + i] = Vertex(pos[i + 4], nor[5], uv[i], col[i + 4]);
 	}
 
 	for (int i = 0; i < indexNum; i += 3)
@@ -525,4 +535,9 @@ void Mesh::AssembleMesh(const vector<XMFLOAT3> &vecPos,
 		vertices[i] = Vertex(pos, nor, uv);
 		indices[i] = i;//this way, all 3 vertices on every triangle are unique, even though they belong to the same polygon, which increase storing space but allow for finer control
 	}
+}
+
+bool Mesh::IsInitiated()
+{
+	return initiated;
 }

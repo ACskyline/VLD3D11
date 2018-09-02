@@ -20,8 +20,6 @@ public:
 	void UpdateObject(ID3D11DeviceContext *d3d11DevCon);
 	void DrawObject(ID3D11DeviceContext *d3d11DevCon);
 
-	void SetMesh(Mesh *_pMesh);
-	void SetMaterial(Material *_pMaterial);
 	void SetDrawable(Drawable *_pDrawable);
 	void SetCamera(Camera *_pCamera);
 	void SetLight(Light *_pLight);
@@ -30,8 +28,6 @@ public:
 	void ConnectSceneUniform(SceneUniform *_pSceneUniform);
 
 private:
-	Mesh* pMesh;
-	Material* pMaterial;
 	Drawable* pDrawable;
 	Camera* pCamera;
 	Light* pLight;

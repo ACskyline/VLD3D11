@@ -1,7 +1,14 @@
 #include "Material.h"
 
-Material::Material(wstring _vsName, wstring _psName, D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], uint8_t _vertLayoutDescSize) : 
-	vsName(_vsName), psName(_psName), vertLayoutDescSize(_vertLayoutDescSize)
+Material::Material(wstring _vsName, 
+				   wstring _psName, 
+				   D3D11_INPUT_ELEMENT_DESC _vertLayoutDesc[], 
+				   uint8_t _vertLayoutDescSize) : 
+	vsName(_vsName), 
+	psName(_psName), 
+	vertLayoutDescSize(_vertLayoutDescSize), 
+	initiated(false),
+	pTex(nullptr)
 {
 	vertLayoutDesc = new D3D11_INPUT_ELEMENT_DESC[vertLayoutDescSize];
 	for (int i = 0; i < vertLayoutDescSize; i++)
@@ -74,4 +81,49 @@ void Material::SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon)
 	//Set Primitive Topology
 	d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
+}
+
+bool Material::InitMaterial(ID3D11Device* d3d11Device)
+{
+	if (!CreateShader(d3d11Device)) return false;
+	printf("material create buffer done!\n");
+	if (!CreateLayout(d3d11Device)) return false;
+	printf("material create layout done!\n");
+
+	if (HasTexture())
+	{
+		if (!pTex->IsInitiated())
+		{
+			if (!pTex->InitTexture(d3d11Device))
+				return false;
+		}
+	}
+
+	initiated = true;
+	return true;
+}
+
+bool Material::IsInitiated()
+{
+	return initiated;
+}
+
+void Material::SetTexture(Texture* _pTex)
+{
+	pTex = _pTex;
+}
+
+Texture* Material::GetTexture()
+{
+	return pTex;
+}
+
+bool Material::HasTexture()
+{
+	return pTex != nullptr;
+}
+
+void Material::UseTexture(ID3D11DeviceContext* d3d11DevCon)
+{
+	pTex->UseTextureData(MAIN_TEXTURE_SLOT, d3d11DevCon);//temporary, only use slot 0
 }

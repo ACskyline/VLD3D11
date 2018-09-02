@@ -40,9 +40,13 @@ struct v2f
 {
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
-	float3 posW : TEXCOORD0;
-	float3 norW : TEXCOORD1;
+	float2 uv : TEXCOORD0;
+	float3 posW : TEXCOORD1;
+	float3 norW : TEXCOORD2;
 };
+
+Texture2D MainTexture : register(t0);
+SamplerState SamplerMainTexture : register(s0);
 
 //unit cube face intersection detection
 bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t)

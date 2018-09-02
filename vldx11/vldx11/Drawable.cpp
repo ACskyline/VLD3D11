@@ -1,7 +1,9 @@
 #include "Drawable.h"
 
-Drawable::Drawable(DrawableType _type) : vertexBuffer(nullptr), indexBuffer(nullptr),
-objectUniformBuffer(nullptr), pObject(nullptr), type(_type)
+Drawable::Drawable(DrawableType _type, Mesh* _pMesh, Material* _pMat) : 
+	pMesh(_pMesh), pMat(_pMat), initiated(false),
+	vertexBuffer(nullptr), indexBuffer(nullptr),
+	objectUniformBuffer(nullptr), type(_type)
 {
 }
 
@@ -13,7 +15,7 @@ Drawable::~Drawable()
 	if (objectUniformBuffer != nullptr) objectUniformBuffer->Release();
 }
 
-bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
+bool Drawable::CreateBuffer(ID3D11Device* d3d11Device)
 {
 	HRESULT hr;
 
@@ -21,7 +23,7 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * mesh->vertexNum;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * pMesh->vertexNum;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -33,7 +35,7 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(DWORD) * mesh->indexNum;
+	indexBufferDesc.ByteWidth = sizeof(DWORD) * pMesh->indexNum;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -56,10 +58,10 @@ bool Drawable::CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh)
 	return true;
 }
 
-void Drawable::VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh)
+void Drawable::VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon)
 {
-	d3d11DevCon->UpdateSubresource(vertexBuffer, 0, NULL, mesh->vertices, 0, 0);
-	d3d11DevCon->UpdateSubresource(indexBuffer, 0, NULL, mesh->indices, 0, 0);
+	d3d11DevCon->UpdateSubresource(vertexBuffer, 0, NULL, pMesh->vertices, 0, 0);
+	d3d11DevCon->UpdateSubresource(indexBuffer, 0, NULL, pMesh->indices, 0, 0);
 }
 
 void Drawable::ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
@@ -91,30 +93,32 @@ void Drawable::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetObjectUniformBufferPS(d3d11DevCon);
 }
 
-void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon)
 {
+	//set shader first
+	pMat->SetShader(d3d11DevCon);
+
+	SetVertexIndexBuffer(d3d11DevCon);
+	SetObjectUniformBufferVSPS(d3d11DevCon);
+
+	if (pMat->HasTexture()) pMat->UseTexture(d3d11DevCon);
+
 	if (type == DrawableType::TrianlgeList)
-		DrawTriangleList(d3d11DevCon, mesh, mat);
+		UseTriangleList(d3d11DevCon);
 	else if (type == DrawableType::LineList)
-		DrawLineList(d3d11DevCon, mesh, mat);
+		UseLineList(d3d11DevCon);
+
+	d3d11DevCon->DrawIndexed(pMesh->indexNum, 0, 0);
 }
 
-void Drawable::DrawTriangleList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+void Drawable::UseTriangleList(ID3D11DeviceContext* d3d11DevCon)
 {
-	mat->SetShader(d3d11DevCon);
-	mat->SetLayoutTriangleList(d3d11DevCon);
-	SetVertexIndexBuffer(d3d11DevCon);
-	SetObjectUniformBufferVSPS(d3d11DevCon);
-	d3d11DevCon->DrawIndexed(mesh->indexNum, 0, 0);
+	pMat->SetLayoutTriangleList(d3d11DevCon);
 }
 
-void Drawable::DrawLineList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat)
+void Drawable::UseLineList(ID3D11DeviceContext* d3d11DevCon)
 {
-	mat->SetShader(d3d11DevCon);
-	mat->SetLayoutLineList(d3d11DevCon);
-	SetVertexIndexBuffer(d3d11DevCon);
-	SetObjectUniformBufferVSPS(d3d11DevCon);
-	d3d11DevCon->DrawIndexed(mesh->indexNum, 0, 0);
+	pMat->SetLayoutLineList(d3d11DevCon);
 }
 
 void Drawable::SetM(Transform* pTransform)
@@ -144,12 +148,26 @@ void Drawable::ApplyColor(float r, float g, float b, float a)
 	objectUniformData.COL = XMFLOAT4(r, g, b, a);
 }
 
-void Drawable::SetObject(Object* _pObject)
+bool Drawable::InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	pObject = _pObject;
+	if (!pMesh->IsInitiated())
+	{
+		if (!pMesh->InitMesh()) return false;
+	}
+	if (!pMat->IsInitiated())
+	{
+		if (!pMat->InitMaterial(d3d11Device)) return false;
+	}
+	if (!CreateBuffer(d3d11Device)) return false;
+	VertexIndexBufferData(d3d11DevCon);
+	ObjectUniformBufferData(d3d11DevCon);
+	SetObjectUniformBufferVSPS(d3d11DevCon);
+	printf("drawble create buffer done!\n");
+	initiated = true;
+	return true;
 }
 
-Object* Drawable::GetObject()
+bool Drawable::IsInitiated()
 {
-	return pObject;
+	return initiated;
 }

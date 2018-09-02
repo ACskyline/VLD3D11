@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+#include <dinput.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <d3d11.h>
@@ -12,6 +14,8 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include "WICTextureLoader\WICTextureLoader.h"
+#include "DDSTextureLoader\DDSTextureLoader.h"
 
 #ifndef HALF_PI
 #define HALF_PI 1.570796326794896
@@ -43,6 +47,10 @@
 
 #ifndef SCENE_UNIFORM_SOLT
 #define SCENE_UNIFORM_SOLT 2
+#endif
+
+#ifndef MAIN_TEXTURE_SLOT
+#define MAIN_TEXTURE_SLOT 0
 #endif
 
 using namespace DirectX;

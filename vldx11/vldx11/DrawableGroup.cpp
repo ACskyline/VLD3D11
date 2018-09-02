@@ -61,7 +61,7 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 		//rasterizerDesc.MultisampleEnable = FALSE;//default
 		rasterizerDesc.AntialiasedLineEnable = TRUE;
 
-		depthStencilDesc.DepthEnable = false;
+		//depthStencilDesc.DepthEnable = FALSE;
 		//depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;//default
 		//depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;//default
 		//depthStencilDesc.StencilEnable = FALSE;//default
@@ -106,6 +106,6 @@ void DrawableGroup::Draw(ID3D11DeviceContext* d3d11DevCon)
 	d3d11DevCon->OMSetDepthStencilState(d3d11DepthStencilState, 0);//Stencil Ref (0 in this case, which is not useful in our situation, it is just a place holder) can be replaced in a shader using SV_StencilRef
 	for(auto item = drawableVector.begin();item!=drawableVector.end();item++)
 	{
-		(*item)->GetObject()->DrawObject(d3d11DevCon);
+		(*item)->Draw(d3d11DevCon);
 	}
 }

@@ -23,32 +23,34 @@ class Drawable
 public:
 	enum DrawableType { TrianlgeList, LineList };
 
-	Drawable(DrawableType _type);
+	Drawable(DrawableType _type, Mesh* _pMesh, Material* _pMat);
 	~Drawable();
-	bool CreateBuffer(ID3D11Device* d3d11Device, Mesh* mesh);
-	void VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh);
+	bool CreateBuffer(ID3D11Device* d3d11Device);
+	void VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon);
 	void ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon);
 	void SetObjectUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
 	void SetObjectUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void Draw(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat);
+	void Draw(ID3D11DeviceContext* d3d11DevCon);
 	void ApplyTransform(Transform* pTransform);
 	void ApplyColor(float r, float g, float b, float a);
-	void SetObject(Object* _pObject);
-	Object* GetObject();
 
+	bool InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
+	bool IsInitiated();
 
 private:
 	ObjectUniformData objectUniformData;
 	DrawableType type;
-	Object* pObject;
+	Mesh* pMesh;
+	Material* pMat;
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
 	ID3D11Buffer* objectUniformBuffer;
 	void SetVertexIndexBuffer(ID3D11DeviceContext* d3d11DevCon);
 	void SetM(Transform* pTransform);
 	void SetM_INV(Transform* pTransform);
-	void DrawTriangleList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat);
-	void DrawLineList(ID3D11DeviceContext* d3d11DevCon, Mesh* mesh, Material* mat);
+	void UseTriangleList(ID3D11DeviceContext* d3d11DevCon);
+	void UseLineList(ID3D11DeviceContext* d3d11DevCon);
+	bool initiated;
 };
 

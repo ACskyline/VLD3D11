@@ -2,7 +2,7 @@
 
 
 
-Object::Object() : pMesh(nullptr), pMaterial(nullptr), pDrawable(nullptr),
+Object::Object() : pDrawable(nullptr),
 				   pCamera(nullptr), pLight(nullptr), pTransform(nullptr)
 {
 }
@@ -29,21 +29,9 @@ bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11Dev
 	{
 		pSceneUniform->ApplyCamera(pCamera);
 	}
-	if (pMaterial != nullptr)
+	if (pDrawable != nullptr)
 	{
-		if (!pMaterial->CreateShader(d3d11Device)) return false;
-		printf("material create buffer done!\n");
-		if (!pMaterial->CreateLayout(d3d11Device)) return false;
-		printf("material create layout done!\n");
-	}
-	if (pDrawable != nullptr&&pMesh != nullptr)
-	{
-		if (!pMesh->InitMesh()) return false;
-		if (!pDrawable->CreateBuffer(d3d11Device, pMesh)) return false;
-		pDrawable->VertexIndexBufferData(d3d11DevCon, pMesh);
-		pDrawable->ObjectUniformBufferData(d3d11DevCon);
-		pDrawable->SetObjectUniformBufferVSPS(d3d11DevCon);
-		printf("drawble create buffer done!\n");
+		if (!pDrawable->IsInitiated()) pDrawable->InitDrawable(d3d11Device, d3d11DevCon);
 	}
 
 	return true;
@@ -75,26 +63,15 @@ void Object::UpdateObject(ID3D11DeviceContext *d3d11DevCon)
 
 void Object::DrawObject(ID3D11DeviceContext *d3d11DevCon)
 {
-	if (pDrawable != nullptr && pMesh != nullptr && pMaterial != nullptr)
+	if (pDrawable != nullptr)
 	{
-		pDrawable->Draw(d3d11DevCon, pMesh, pMaterial);
+		pDrawable->Draw(d3d11DevCon);
 	}
-}
-
-void Object::SetMesh(Mesh *_pMesh)
-{
-	pMesh = _pMesh;
-}
-
-void Object::SetMaterial(Material *_pMaterial)
-{
-	pMaterial = _pMaterial;
 }
 
 void Object::SetDrawable(Drawable *_pDrawable)
 {
 	pDrawable = _pDrawable;
-	pDrawable->SetObject(this);
 }
 
 void Object::SetCamera(Camera *_pCamera)
