@@ -20,6 +20,34 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 	//ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 	//ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
 
+	if (type == DrawableGroupType::Standard)//for standard mesh
+	{
+		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;//default, but if comment this, create function will return an error but still perform as expected -> using cd3d11 description with default value fix this
+		//rasterizerDesc.CullMode = D3D11_CULL_BACK;//default
+		//rasterizerDesc.FrontCounterClockwise = FALSE;//default
+		//rasterizerDesc.DepthBias = 0;//default
+		//rasterizerDesc.SlopeScaledDepthBias = 0.0f;//default
+		//rasterizerDesc.DepthBiasClamp = 0.0f;//default
+		//rasterizerDesc.DepthClipEnable = TRUE;//default
+		//rasterizerDesc.ScissorEnable = FALSE;//default
+		rasterizerDesc.MultisampleEnable = TRUE;
+		//rasterizerDesc.AntialiasedLineEnable = FALSE;//default
+
+		//depthStencilDesc.DepthEnable = TRUE;//default
+		//depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;//default
+		//depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;//default
+		//depthStencilDesc.StencilEnable = FALSE;//default
+		//depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;//default
+		//depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;//default
+		//depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;//default
+		//depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;//default
+		//depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;//default
+		//depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;//default
+		//depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;//default
+		//depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;//default
+		//depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;//default
+		//depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;//default
+	}
 	if (type == DrawableGroupType::VolumeLight)//for volume light
 	{
 		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;//default, but if comment this, create function will return an error but still perform as expected -> using cd3d11 description with default value fix this
@@ -48,7 +76,7 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 		//depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;//default
 		//depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;//default
 	}
-	else if (type == DrawableGroupType::Gizmo)//for gizmos
+	if (type == DrawableGroupType::Gizmo)//for gizmos
 	{
 		rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;

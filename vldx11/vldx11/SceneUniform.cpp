@@ -54,8 +54,10 @@ void SceneUniform::SetSceneUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 
 void SceneUniform::ApplyLight(Light* pLight)
 {
-	sceneUniformData.lightCol = pLight->col;
-	sceneUniformData.lightPos = pLight->pos;
+	sceneUniformData.lightCol = pLight->GetCol();
+	sceneUniformData.lightPos = pLight->GetPos();
+	sceneUniformData.lightDir = pLight->GetDir();
+	sceneUniformData.lightRadius = pLight->GetRadius();
 }
 
 void SceneUniform::ApplyCamera(Camera* pCamera)

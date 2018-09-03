@@ -10,13 +10,17 @@ class SceneUniform
 		XMFLOAT4 lightCol;
 		XMFLOAT3 lightPos;
 		uint32_t step;
+		XMFLOAT3 lightDir;
 		float farClip;
-		uint32_t PAD1;//padding
-		uint32_t PAD2;//padding
-		uint32_t PAD3;//padding
+		float lightRadius;
+		uint32_t PAD1;
+		uint32_t PAD2;
+		uint32_t PAD3;
 		SceneUniformData() :
 			lightCol(XMFLOAT4(1, 1, 1, 1)),
 			lightPos(XMFLOAT3(0, 0, 0)),
+			lightDir(XMFLOAT3(0, 0, 0)),
+			lightRadius(0.f),
 			step(0),
 			farClip(0.f)
 		{}

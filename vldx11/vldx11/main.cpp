@@ -1,13 +1,15 @@
 #include "Object.h"
-#include "OrbitCamera.h"
 #include "DrawableGroup.h"
 
 IDXGISwapChain* SwapChain;
 ID3D11Device* d3d11Device;
 ID3D11DeviceContext* d3d11DevCon;
 ID3D11RenderTargetView* renderTargetView;
-ID3D11DepthStencilView* depthStencilView;
+ID3D11RenderTargetView* renderTargetView_ShadowMap;//to do
 ID3D11Texture2D* depthStencilBuffer;
+ID3D11Texture2D* depthStencilBuffer_ShadowMap;//to do
+ID3D11DepthStencilView* depthStencilView;
+ID3D11ShaderResourceView* shaderResourceView_ShadowMap;//to do
 
 D3D11_INPUT_ELEMENT_DESC layout[] =
 {
@@ -21,6 +23,8 @@ LPCTSTR WndClassName = "firstwindow";
 HWND hwnd = NULL;
 const int Width = 800;
 const int Height = 600;
+const int Width_ShadowMap = 400;
+const int Height_ShadowMap = 300;
 uint32_t frame = 0;
 XMVECTORF32 bgColor{ 0.3f, 0.3f, 0.8f, 1.f };
 
@@ -29,20 +33,29 @@ IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
 
-Mesh mMeshVolume(Mesh::MeshType::Cube);
-Mesh mMeshAxis(Mesh::MeshType::Axis);
-Mesh mMeshGrid(Mesh::MeshType::Grid, 50);
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexture.hlsl", layout, ARRAYSIZE(layout));
+vector<Object*> GlobalObjVec;
+vector<DrawableGroup*> GlobalDrawableGrpVec;
+
+CubeMesh mMeshVolume;
+AxisMesh mMeshAxis;
+GridMesh mMeshGrid(50);
+PlaneMesh mMeshPlane;
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFog.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialStandard(L"myVert.hlsl", L"myPixelLambertDirectionalLight.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialStandardTexture(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
+Drawable mDrawablePlane(Drawable::DrawableType::TrianlgeList, &mMeshPlane, &mMaterialStandard);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10, 10));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
+Transform mTransformPlane(XMFLOAT3(0, -10, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(50, 1, 50));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
-Light mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(0.8, 0.7, 0, 1));
-Texture mTex(Texture::Albedo, L"checkerboard.png");
+//PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
+DirectionalLight mLight(XMFLOAT3(-1, -1, -1), XMFLOAT4(1, 1, 1, 1));
+Texture mTex(Texture::Albedo, L"checkerboard.jpg");
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
 Object objVolume;
@@ -50,8 +63,10 @@ Object objLight;
 Object objCamera;
 Object objAxis;
 Object objGrid;
+Object objPlane;
 DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
 DrawableGroup grpDrawableGizmo(DrawableGroup::DrawableGroupType::Gizmo);
+DrawableGroup grpDrawableStandard(DrawableGroup::DrawableGroupType::Standard);
 
 void InitConsole()
 {
@@ -144,6 +159,58 @@ bool InitDepthStencilView()
 	return true;
 }
 
+bool InitShadowMapResource()
+{
+	D3D11_TEXTURE2D_DESC textureDesc;
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	HRESULT hr;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Initialize the  texture description.
+	ZeroMemory(&textureDesc, sizeof(textureDesc));
+
+	// Setup the texture description, bind this texture as a render target AND a shader resource
+	textureDesc.Width = Width_ShadowMap;
+	textureDesc.Height = Height_ShadowMap;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	// Create the texture
+	hr = d3d11Device->CreateTexture2D(&textureDesc, NULL, &depthStencilBuffer_ShadowMap);
+	if (!CheckError(hr, nullptr)) return false;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Setup the description of the render target view.
+	renderTargetViewDesc.Format = textureDesc.Format;
+	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	renderTargetViewDesc.Texture2D.MipSlice = 0;
+
+	// Create the render target view.
+	hr = d3d11Device->CreateRenderTargetView(depthStencilBuffer_ShadowMap, &renderTargetViewDesc, &renderTargetView_ShadowMap);
+	if (!CheckError(hr, nullptr)) return false;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Setup the description of the shader resource view.
+	shaderResourceViewDesc.Format = textureDesc.Format;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+	// Create the shader resource view.
+	hr =d3d11Device->CreateShaderResourceView(depthStencilBuffer_ShadowMap, &shaderResourceViewDesc, &shaderResourceView_ShadowMap);
+	if (!CheckError(hr, nullptr)) return false;
+
+	return true;
+}
+
 bool InitD3D11App()
 {
 	HRESULT hr;
@@ -190,6 +257,9 @@ bool InitD3D11App()
 
 	//Create our Depth Stencil View
 	if (!InitDepthStencilView()) return false;
+
+	//Create shadow map resource
+	//if (!InitShadowMapResource()) return false;
 
 	//Set our Render Target
 	d3d11DevCon->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
@@ -248,12 +318,14 @@ bool InitLevel()
 	InitViewport();
 
 	//texture
-	mMaterialVolume.SetTexture(&mTex);
+	//mMaterialStandardTexture.SetTexture(&mTex);
+	//mMaterialVolume.SetTexture(&mTex);
 
 	//drawable
 	mDrawableVolume.ApplyColor(1, 1, 1, 1);
 	mDrawableAxis.ApplyColor(1, 1, 1, 1);
 	mDrawableGrid.ApplyColor(1, 1, 1, 1);
+	mDrawablePlane.ApplyColor(1, 1, 1, 1);
 
 	grpDrawableVolume.AddDrawable(&mDrawableVolume);
 	grpDrawableVolume.InitDrawableGroup(d3d11Device);
@@ -261,6 +333,9 @@ bool InitLevel()
 	grpDrawableGizmo.AddDrawable(&mDrawableAxis);
 	grpDrawableGizmo.AddDrawable(&mDrawableGrid);
 	grpDrawableGizmo.InitDrawableGroup(d3d11Device);
+
+	grpDrawableStandard.AddDrawable(&mDrawablePlane);
+	grpDrawableStandard.InitDrawableGroup(d3d11Device);
 
 	mFrameUniform.ApplyCol(1, 1, 1, 1);
 	mFrameUniform.ApplyIntensity(5.f);
@@ -271,11 +346,14 @@ bool InitLevel()
 	objVolume.SetTransform(&mTransformVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
 
+	objAxis.SetTransform(&mTransformAxis);
+	objAxis.SetDrawable(&mDrawableAxis);
+
 	objGrid.SetTransform(&mTransformGrid);
 	objGrid.SetDrawable(&mDrawableGrid);
 	
-	objAxis.SetTransform(&mTransformAxis);
-	objAxis.SetDrawable(&mDrawableAxis);
+	objPlane.SetTransform(&mTransformPlane);
+	objPlane.SetDrawable(&mDrawablePlane);
 
 	objCamera.SetCamera(&mCamera);
 	objCamera.ConnectFrameUniform(&mFrameUniform);
@@ -286,10 +364,22 @@ bool InitLevel()
 	if (!objVolume.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objAxis.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objGrid.InitObject(d3d11Device, d3d11DevCon)) return false;
+	if (!objPlane.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objCamera.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!objLight.InitObject(d3d11Device, d3d11DevCon)) return false;
 	if (!mFrameUniform.InitFrameUniform(d3d11Device, d3d11DevCon)) return false;
 	if (!mSceneUniform.InitSceneUniform(d3d11Device, d3d11DevCon)) return false;
+
+	GlobalDrawableGrpVec.push_back(&grpDrawableVolume);
+	GlobalDrawableGrpVec.push_back(&grpDrawableGizmo);
+	GlobalDrawableGrpVec.push_back(&grpDrawableStandard);
+
+	GlobalObjVec.push_back(&objVolume);
+	GlobalObjVec.push_back(&objGrid);
+	GlobalObjVec.push_back(&objAxis);
+	GlobalObjVec.push_back(&objPlane);
+	GlobalObjVec.push_back(&objCamera);
+	GlobalObjVec.push_back(&objLight);
 
 	printf("init level finish!\n");
 	return true;
@@ -306,11 +396,11 @@ void DetectInput()
 	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
 	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
+	//keyboard control
 	if (keyboardState[DIK_ESCAPE] & 0x80)
 	{
 		PostMessage(hwnd, WM_DESTROY, 0, 0);
 	}
-
 	if (keyboardState[DIK_W] & 0x80)
 	{
 		mTransformVolume.position.y += 0.001;
@@ -337,61 +427,82 @@ void DetectInput()
 	}
 	if (keyboardState[DIK_UP] & 0x80)
 	{
-		mLight.pos.y += 0.005;
-		mTransformAxis.position.y += 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos(); 
+		lightPosTemp.y += 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
 	if (keyboardState[DIK_DOWN] & 0x80)
 	{
-		mLight.pos.y -= 0.005;
-		mTransformAxis.position.y -= 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos();
+		lightPosTemp.y -= 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
 	if (keyboardState[DIK_LEFT] & 0x80)
 	{
-		mLight.pos.x -= 0.005;
-		mTransformAxis.position.x -= 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos();
+		lightPosTemp.x -= 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
 	if (keyboardState[DIK_RIGHT] & 0x80)
 	{
-		mLight.pos.x += 0.005;
-		mTransformAxis.position.x += 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos();
+		lightPosTemp.x += 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
 	if (keyboardState[DIK_COMMA] & 0x80)
 	{
-		mLight.pos.z -= 0.005;
-		mTransformAxis.position.z -= 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos();
+		lightPosTemp.z -= 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
 	if (keyboardState[DIK_PERIOD] & 0x80)
 	{
-		mLight.pos.z += 0.005;
-		mTransformAxis.position.z += 0.005;
+		XMFLOAT3 lightPosTemp = mLight.GetPos();
+		lightPosTemp.z += 0.005;
+		mLight.SetPos(lightPosTemp);
+		mTransformAxis.position = lightPosTemp;
 	}
-	if (mouseCurrState.lX != 0)
+
+	//mouse control
+	if (keyboardState[DIK_LCONTROL] & 0x80)
 	{
-		if (keyboardState[DIK_LCONTROL] & 0x80)
-			mTransformVolume.rotation.y += mouseCurrState.lX * 0.01;
-		else
-			mCamera.horizontalAngle += mouseCurrState.lX * 0.1;
-	}
-	if (mouseCurrState.lY != 0)
-	{
-		if (keyboardState[DIK_LCONTROL] & 0x80)
+		if (mouseCurrState.lX != 0)
 		{
-			mTransformVolume.rotation.z += mouseCurrState.lY * 0.01;
+			mTransformVolume.rotation.y += mouseCurrState.lX * 0.01;
 		}
-		else
+		if (mouseCurrState.lY != 0)
+		{
+			mTransformVolume.rotation.x += mouseCurrState.lY * 0.01;
+			
+		}
+		if (mouseCurrState.lZ != 0)
+		{
+			mTransformVolume.rotation.z += mouseCurrState.lZ * 0.002;
+		}
+	}
+	else
+	{
+		if (mouseCurrState.lX != 0)
+		{
+			mCamera.horizontalAngle += mouseCurrState.lX * 0.1;
+		}
+		if (mouseCurrState.lY != 0)
 		{
 			mCamera.verticalAngle += mouseCurrState.lY * 0.1;
-			if (mCamera.verticalAngle > 90 - EPSILON)
-				mCamera.verticalAngle = 89 - EPSILON;
-			if (mCamera.verticalAngle < -90 + EPSILON)
-				mCamera.verticalAngle = -89 + EPSILON;
+			if (mCamera.verticalAngle > 90 - EPSILON) mCamera.verticalAngle = 89 - EPSILON;
+			if (mCamera.verticalAngle < -90 + EPSILON) mCamera.verticalAngle = -89 + EPSILON;
+		
 		}
-	}
-	if (mouseCurrState.lZ != 0)
-	{
-		mCamera.distance -= mouseCurrState.lZ * 0.01;
-		if (mCamera.distance < 0 + EPSILON)
-			mCamera.distance = 0.1 + EPSILON;
+		if (mouseCurrState.lZ != 0)
+		{
+			mCamera.distance -= mouseCurrState.lZ * 0.01;
+			if (mCamera.distance < 0 + EPSILON) mCamera.distance = 0.1 + EPSILON;
+		}
 	}
 
 	mouseLastState = mouseCurrState;
@@ -401,10 +512,10 @@ void DetectInput()
 
 void UpdateScene()
 {
-	objVolume.UpdateObject(d3d11DevCon);
-	objAxis.UpdateObject(d3d11DevCon);
-	objCamera.UpdateObject(d3d11DevCon);
-	objLight.UpdateObject(d3d11DevCon);
+	for (auto item = GlobalObjVec.begin(); item != GlobalObjVec.end(); item++)
+	{
+		(*item)->UpdateObject(d3d11DevCon);
+	}
 
 	frame++;
 	mFrameUniform.ApplyFrameNum(frame);
@@ -417,8 +528,11 @@ void DrawScene()
 	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	//Draw Call
-	grpDrawableVolume.Draw(d3d11DevCon);
-	grpDrawableGizmo.Draw(d3d11DevCon);
+	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	{
+		(*item)->Draw(d3d11DevCon);
+	}
+
 
 	//Present the backbuffer to the screen
 	SwapChain->Present(0, 0);

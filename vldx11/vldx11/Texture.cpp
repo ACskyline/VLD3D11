@@ -1,12 +1,9 @@
 #include "Texture.h"
 
-
-
 Texture::Texture(TextureType _type, wstring _fileName) :
 	type(_type), fileName(_fileName), initiated(false)
 {
 }
-
 
 Texture::~Texture()
 {
@@ -18,7 +15,7 @@ Texture::~Texture()
 bool Texture::InitTexture(ID3D11Device* d3d11Device)
 {
 	HRESULT hr;
-	//hr = CreateWICTextureFromFile(d3d11Device, fileName.c_str(), &textureRes, &textureResView);
+	//hr = CreateWICTextureFromFile(d3d11Device, fileName.c_str(), (ID3D11Resource**)(&(textureRes)), &textureResView);
 	hr = CreateWICTextureFromFileEx(d3d11Device, 
 									fileName.c_str(), 
 									0, 
@@ -27,7 +24,7 @@ bool Texture::InitTexture(ID3D11Device* d3d11Device)
 									0, 
 									0, 
 									WIC_LOADER_IGNORE_SRGB, 
-									&textureRes, 
+									(ID3D11Resource**)(&(textureRes)), 
 									&textureResView);
 	if (!CheckError(hr, nullptr)) return false;
 

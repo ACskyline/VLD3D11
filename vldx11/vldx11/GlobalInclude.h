@@ -49,8 +49,12 @@
 #define SCENE_UNIFORM_SOLT 2
 #endif
 
+#ifndef SHADOW_MAP_SLOT
+#define SHADOW_MAP_SLOT 0
+#endif
+
 #ifndef MAIN_TEXTURE_SLOT
-#define MAIN_TEXTURE_SLOT 0
+#define MAIN_TEXTURE_SLOT 1
 #endif
 
 using namespace DirectX;

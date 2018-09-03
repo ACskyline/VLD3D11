@@ -45,9 +45,6 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OrbitCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,9 +95,6 @@
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OrbitCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -139,16 +133,28 @@
     <FxCompile Include="myInclude.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="myPixelHalfLambert.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
     <FxCompile Include="myPixelSphereFog.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
     <FxCompile Include="myPixelConeFog.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="myPixelTexture.hlsl">
+    <FxCompile Include="myPixelTexturePointLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelLambertPointLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelHalfLambertPointLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelLambertDirectionalLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelHalfLambertDirectionalLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelTextureDirectionalLight.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>

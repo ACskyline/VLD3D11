@@ -22,7 +22,7 @@ private:
 	wstring fileName;
 	bool initiated;
 
-	ID3D11Resource* textureRes;
+	ID3D11Texture2D* textureRes;
 	ID3D11ShaderResourceView* textureResView;
 	ID3D11SamplerState* samplerState;
 

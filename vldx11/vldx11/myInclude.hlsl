@@ -25,7 +25,9 @@ cbuffer SceneUniform : register(b2)
 	float4 LIGHT_COL;
 	float3 LIGHT_POS;
 	uint STEP;
+	float3 LIGHT_DIR;
 	float FAR_CLIP;
+    float LIGHT_RADIUS;
 };
 
 struct a2v
@@ -45,8 +47,16 @@ struct v2f
 	float3 norW : TEXCOORD2;
 };
 
-Texture2D MainTexture : register(t0);
-SamplerState SamplerMainTexture : register(s0);
+Texture2D ShadowMap : register(t0);
+SamplerState SamplerShadowMap : register(s0);
+
+Texture2D MainTexture : register(t1);
+SamplerState SamplerMainTexture : register(s1);
+
+float AttenuatePointLight(float3 posW)
+{
+    return max(0, -1.f / LIGHT_RADIUS * length(LIGHT_POS - posW) + 1.f);
+}
 
 //unit cube face intersection detection
 bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t)
