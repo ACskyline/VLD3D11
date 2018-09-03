@@ -17,45 +17,20 @@
 #include "WICTextureLoader\WICTextureLoader.h"
 #include "DDSTextureLoader\DDSTextureLoader.h"
 
-#ifndef HALF_PI
 #define HALF_PI 1.570796326794896
-#endif
-
-#ifndef EPSILON
 #define EPSILON 0.00000001
-#endif
-
-#ifndef DEGREE_TO_RADIAN
 #define DEGREE_TO_RADIAN 0.017453292519943
-#endif
 
-#ifndef MY_DELETE(ptr)
 #define MY_DELETE(ptr) if(ptr!=nullptr){ delete ptr; ptr = nullptr;}
-#endif
-
-#ifndef MY_DELETE_ARRAY(ptr)
 #define MY_DELETE_ARRAY(ptr) if(ptr!=nullptr){ delete [] ptr; ptr = nullptr;}
-#endif
 
-#ifndef OBJECT_UNIFORM_SOLT
 #define OBJECT_UNIFORM_SOLT 0
-#endif
-
-#ifndef FRAME_UNIFORM_SOLT
 #define FRAME_UNIFORM_SOLT 1
-#endif
-
-#ifndef SCENE_UNIFORM_SOLT
 #define SCENE_UNIFORM_SOLT 2
-#endif
 
-#ifndef SHADOW_MAP_SLOT
-#define SHADOW_MAP_SLOT 0
-#endif
-
-#ifndef MAIN_TEXTURE_SLOT
+#define SHADOW_TEXTURE_SLOT 0
 #define MAIN_TEXTURE_SLOT 1
-#endif
+#define MAX_TEXTURE_SLOT 2
 
 using namespace DirectX;
 using namespace std;

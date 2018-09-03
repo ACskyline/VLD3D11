@@ -17,10 +17,10 @@ public:
 	bool InitMaterial(ID3D11Device* d3d11Device);
 	bool IsInitiated();
 
-	void SetTexture(Texture* pTex);
-	Texture* GetTexture();
-	bool HasTexture();
-	void UseTexture(ID3D11DeviceContext* d3d11DevCon);
+	void SetTexture(uint32_t slot, Texture* pTex);
+	Texture* GetTexture(uint32_t slot);
+	bool HasTexture(uint32_t slot);
+	void UseTexture(uint32_t slot, ID3D11DeviceContext* d3d11DevCon);
 
 private:
 	wstring vsName;
@@ -33,6 +33,6 @@ private:
 	D3D11_INPUT_ELEMENT_DESC* vertLayoutDesc;
 	uint8_t vertLayoutDescSize;
 	bool initiated;
-	Texture* pTex;
+	Texture* pTex[MAX_TEXTURE_SLOT];
 };
 

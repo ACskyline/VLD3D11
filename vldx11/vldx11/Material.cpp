@@ -7,13 +7,17 @@ Material::Material(wstring _vsName,
 	vsName(_vsName), 
 	psName(_psName), 
 	vertLayoutDescSize(_vertLayoutDescSize), 
-	initiated(false),
-	pTex(nullptr)
+	initiated(false)
 {
 	vertLayoutDesc = new D3D11_INPUT_ELEMENT_DESC[vertLayoutDescSize];
 	for (int i = 0; i < vertLayoutDescSize; i++)
 	{
 		vertLayoutDesc[i] = _vertLayoutDesc[i];
+	}
+
+	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	{
+		pTex[i] = nullptr;
 	}
 }
 
@@ -90,12 +94,15 @@ bool Material::InitMaterial(ID3D11Device* d3d11Device)
 	if (!CreateLayout(d3d11Device)) return false;
 	printf("material create layout done!\n");
 
-	if (HasTexture())
+	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
 	{
-		if (!pTex->IsInitiated())
+		if (HasTexture(i))
 		{
-			if (!pTex->InitTexture(d3d11Device))
-				return false;
+			if (!pTex[i]->IsInitiated())
+			{
+				if (!pTex[i]->InitTexture(d3d11Device))
+					return false;
+			}
 		}
 	}
 
@@ -108,22 +115,22 @@ bool Material::IsInitiated()
 	return initiated;
 }
 
-void Material::SetTexture(Texture* _pTex)
+void Material::SetTexture(uint32_t slot, Texture* _pTex)
 {
-	pTex = _pTex;
+	pTex[slot] = _pTex;
 }
 
-Texture* Material::GetTexture()
+Texture* Material::GetTexture(uint32_t slot)
 {
-	return pTex;
+	return pTex[slot];
 }
 
-bool Material::HasTexture()
+bool Material::HasTexture(uint32_t slot)
 {
-	return pTex != nullptr;
+	return pTex[slot] != nullptr;
 }
 
-void Material::UseTexture(ID3D11DeviceContext* d3d11DevCon)
+void Material::UseTexture(uint32_t slot, ID3D11DeviceContext* d3d11DevCon)
 {
-	pTex->UseTextureData(MAIN_TEXTURE_SLOT, d3d11DevCon);//temporary, only use slot 0
+	pTex[slot]->UseTextureData(slot, d3d11DevCon);//temporary, only use slot 0
 }

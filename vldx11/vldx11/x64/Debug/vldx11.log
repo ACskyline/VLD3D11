@@ -1,27 +1,3 @@
-﻿  main.cpp
+﻿  Renderer.cpp
   c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-e:\projects\visual_studio_projects\vldx11\vldx11\globalinclude.h(32): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-e:\projects\visual_studio_projects\vldx11\vldx11\globalinclude.h(36): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(406): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(410): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(414): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(418): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(422): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(426): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(431): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(438): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(445): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(452): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(459): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(466): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(476): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(480): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(485): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(492): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(496): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(497): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(498): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(503): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(504): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(562): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
   vldx11.vcxproj -> E:\Projects\Visual_Studio_Projects\vldx11\x64\Debug\vldx11.exe

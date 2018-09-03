@@ -101,7 +101,10 @@ void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon)
 	SetVertexIndexBuffer(d3d11DevCon);
 	SetObjectUniformBufferVSPS(d3d11DevCon);
 
-	if (pMat->HasTexture()) pMat->UseTexture(d3d11DevCon);
+	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	{
+		if (pMat->HasTexture(i)) pMat->UseTexture(i, d3d11DevCon);
+	}
 
 	if (type == DrawableType::TrianlgeList)
 		UseTriangleList(d3d11DevCon);

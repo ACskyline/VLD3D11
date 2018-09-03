@@ -5,11 +5,8 @@ IDXGISwapChain* SwapChain;
 ID3D11Device* d3d11Device;
 ID3D11DeviceContext* d3d11DevCon;
 ID3D11RenderTargetView* renderTargetView;
-ID3D11RenderTargetView* renderTargetView_ShadowMap;//to do
 ID3D11Texture2D* depthStencilBuffer;
-ID3D11Texture2D* depthStencilBuffer_ShadowMap;//to do
 ID3D11DepthStencilView* depthStencilView;
-ID3D11ShaderResourceView* shaderResourceView_ShadowMap;//to do
 
 D3D11_INPUT_ELEMENT_DESC layout[] =
 {
@@ -23,8 +20,6 @@ LPCTSTR WndClassName = "firstwindow";
 HWND hwnd = NULL;
 const int Width = 800;
 const int Height = 600;
-const int Width_ShadowMap = 400;
-const int Height_ShadowMap = 300;
 uint32_t frame = 0;
 XMVECTORF32 bgColor{ 0.3f, 0.3f, 0.8f, 1.f };
 
@@ -40,10 +35,9 @@ CubeMesh mMeshVolume;
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
 PlaneMesh mMeshPlane;
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFog.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialStandard(L"myVert.hlsl", L"myPixelLambertDirectionalLight.hlsl", layout, ARRAYSIZE(layout));
-//Material mMaterialStandardTexture(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialStandard(L"myVert.hlsl", L"myPixelHalfLambertPointLight.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
@@ -53,8 +47,7 @@ Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1)
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformPlane(XMFLOAT3(0, -10, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(50, 1, 50));
 OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
-//PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
-DirectionalLight mLight(XMFLOAT3(-1, -1, -1), XMFLOAT4(1, 1, 1, 1));
+PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
 Texture mTex(Texture::Albedo, L"checkerboard.jpg");
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
@@ -154,58 +147,6 @@ bool InitDepthStencilView()
 	if (!CheckError(hr, nullptr)) return false;
 
 	hr = d3d11Device->CreateDepthStencilView(depthStencilBuffer, NULL, &depthStencilView);
-	if (!CheckError(hr, nullptr)) return false;
-
-	return true;
-}
-
-bool InitShadowMapResource()
-{
-	D3D11_TEXTURE2D_DESC textureDesc;
-	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	HRESULT hr;
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Initialize the  texture description.
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
-
-	// Setup the texture description, bind this texture as a render target AND a shader resource
-	textureDesc.Width = Width_ShadowMap;
-	textureDesc.Height = Height_ShadowMap;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
-
-	// Create the texture
-	hr = d3d11Device->CreateTexture2D(&textureDesc, NULL, &depthStencilBuffer_ShadowMap);
-	if (!CheckError(hr, nullptr)) return false;
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Setup the description of the render target view.
-	renderTargetViewDesc.Format = textureDesc.Format;
-	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	renderTargetViewDesc.Texture2D.MipSlice = 0;
-
-	// Create the render target view.
-	hr = d3d11Device->CreateRenderTargetView(depthStencilBuffer_ShadowMap, &renderTargetViewDesc, &renderTargetView_ShadowMap);
-	if (!CheckError(hr, nullptr)) return false;
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Setup the description of the shader resource view.
-	shaderResourceViewDesc.Format = textureDesc.Format;
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-
-	// Create the shader resource view.
-	hr =d3d11Device->CreateShaderResourceView(depthStencilBuffer_ShadowMap, &shaderResourceViewDesc, &shaderResourceView_ShadowMap);
 	if (!CheckError(hr, nullptr)) return false;
 
 	return true;
@@ -318,8 +259,7 @@ bool InitLevel()
 	InitViewport();
 
 	//texture
-	//mMaterialStandardTexture.SetTexture(&mTex);
-	//mMaterialVolume.SetTexture(&mTex);
+	mMaterialVolume.SetTexture(MAIN_TEXTURE_SLOT, &mTex);
 
 	//drawable
 	mDrawableVolume.ApplyColor(1, 1, 1, 1);
