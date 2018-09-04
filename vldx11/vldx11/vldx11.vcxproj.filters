@@ -69,6 +69,9 @@
     <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
       <Filter>DDSTextureLoader</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectUniform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -119,6 +122,9 @@
     <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
       <Filter>DDSTextureLoader</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectUniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="myPixel.hlsl">
@@ -155,6 +161,9 @@
       <Filter>Source Files</Filter>
     </FxCompile>
     <FxCompile Include="myPixelTextureDirectionalLight.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelTexturePointLightShadow.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>

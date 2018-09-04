@@ -2,7 +2,7 @@
 
 
 
-FrameUniform::FrameUniform() : frameUniformBuffer(nullptr)
+FrameUniform::FrameUniform() : frameUniformBuffer(nullptr), needToUpload(false)
 {
 }
 
@@ -34,6 +34,7 @@ bool FrameUniform::CreateBuffer(ID3D11Device* d3d11Device)
 void FrameUniform::FrameUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
 {
 	d3d11DevCon->UpdateSubresource(frameUniformBuffer, 0, NULL, &frameUniformData, 0, 0);
+	needToUpload = false;
 }
 
 void FrameUniform::SetFrameUniformBufferVS(ID3D11DeviceContext* d3d11DevCon)
@@ -81,21 +82,25 @@ void FrameUniform::ApplyCamera(Camera* pCamera)
 {
 	frameUniformData.cameraPos = pCamera->position;
 	SetVP_INV(pCamera);
+	needToUpload = true;
 }
 
 void FrameUniform::ApplyCol(float r, float g, float b, float a)
 {
 	frameUniformData.COL = XMFLOAT4(r, g, b, a);
+	needToUpload = true;
 }
 
 void FrameUniform::ApplyIntensity(float intensity)
 {
 	frameUniformData.intensity = intensity;
+	needToUpload = true;
 }
 
 void FrameUniform::ApplyFrameNum(uint32_t frameNum)
 {
 	frameUniformData.frameNum = frameNum;
+	needToUpload = true;
 }
 
 bool FrameUniform::InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
@@ -105,4 +110,9 @@ bool FrameUniform::InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceConte
 	SetFrameUniformBufferVSPS(d3d11DevCon);
 	printf("frameUniform create buffer done!\n");
 	return true;
+}
+
+bool FrameUniform::NeedToUpload()
+{
+	return needToUpload;
 }

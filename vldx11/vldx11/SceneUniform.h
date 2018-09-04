@@ -39,10 +39,10 @@ public:
 	void ApplyCamera(Camera* pCamera);
 	void ApplyStep(uint32_t step);
 	bool InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
-	
+	bool NeedToUpload();
 
 private:
-
+	bool needToUpload;
 	SceneUniformData sceneUniformData;
 	ID3D11Buffer* sceneUniformBuffer;
 };

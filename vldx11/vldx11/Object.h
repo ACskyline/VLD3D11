@@ -5,10 +5,9 @@
 #include "Drawable.h"
 #include "Light.h"
 #include "Transform.h"
+#include "ObjectUniform.h"
 #include "FrameUniform.h"
 #include "SceneUniform.h"
-
-class Drawable;
 
 class Object
 {
@@ -24,6 +23,7 @@ public:
 	void SetCamera(Camera *_pCamera);
 	void SetLight(Light *_pLight);
 	void SetTransform(Transform *_pTransform);
+	void ConnectObjectUniform(ObjectUniform *_pObjectUniform);
 	void ConnectFrameUniform(FrameUniform *_pFrameUniform);
 	void ConnectSceneUniform(SceneUniform *_pSceneUniform);
 
@@ -32,6 +32,7 @@ private:
 	Camera* pCamera;
 	Light* pLight;
 	Transform* pTransform;
+	ObjectUniform* pObjectUniform;
 	FrameUniform* pFrameUniform;
 	SceneUniform* pSceneUniform;
 

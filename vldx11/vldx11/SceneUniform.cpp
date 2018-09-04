@@ -2,7 +2,7 @@
 
 
 
-SceneUniform::SceneUniform() : sceneUniformBuffer(nullptr)
+SceneUniform::SceneUniform() : sceneUniformBuffer(nullptr), needToUpload(false)
 {
 }
 
@@ -34,6 +34,7 @@ bool SceneUniform::CreateBuffer(ID3D11Device* d3d11Device)
 void SceneUniform::SceneUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
 {
 	d3d11DevCon->UpdateSubresource(sceneUniformBuffer, 0, NULL, &sceneUniformData, 0, 0);
+	needToUpload = false;
 }
 
 void SceneUniform::SetSceneUniformBufferVS(ID3D11DeviceContext* d3d11DevCon)
@@ -58,16 +59,19 @@ void SceneUniform::ApplyLight(Light* pLight)
 	sceneUniformData.lightPos = pLight->GetPos();
 	sceneUniformData.lightDir = pLight->GetDir();
 	sceneUniformData.lightRadius = pLight->GetRadius();
+	needToUpload = true;
 }
 
 void SceneUniform::ApplyCamera(Camera* pCamera)
 {
 	sceneUniformData.farClip = pCamera->farClipPlane;
+	needToUpload = true;
 }
 
 void SceneUniform::ApplyStep(uint32_t step)
 {
 	sceneUniformData.step = step;
+	needToUpload = true;
 }
 
 bool SceneUniform::InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
@@ -77,4 +81,9 @@ bool SceneUniform::InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceConte
 	SetSceneUniformBufferVSPS(d3d11DevCon);
 	printf("frameUniform create buffer done!\n");
 	return true;
+}
+
+bool SceneUniform::NeedToUpload()
+{
+	return needToUpload;
 }

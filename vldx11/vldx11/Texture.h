@@ -8,7 +8,7 @@
 class Texture
 {
 public:
-	enum TextureType { Default, Albedo };
+	enum TextureType { Default };
 
 	Texture(TextureType _type, wstring _fileName);
 	~Texture();
@@ -34,14 +34,22 @@ private:
 class RenderTexture : public Texture
 {
 public:
-	enum RenderTextureType { ShadowMap };
+	enum RenderTextureType { Default, ShadowMap };
 
 	RenderTexture(RenderTextureType _typeRT);
 	~RenderTexture();
 
 	bool InitTexture(ID3D11Device* d3d11Device);
+	bool HasRenderTargetView();
+	bool HasDepthStencilView();
+	ID3D11RenderTargetView* GetRenderTargetView();
+	ID3D11DepthStencilView* GetDepthStencilView();
 	
 private:
 	RenderTextureType typeRT;
 	ID3D11RenderTargetView* renderTargetView;
+	ID3D11DepthStencilView* depthStencilView;
+
+	bool InitTextureDefault(ID3D11Device* d3d11Device);
+	bool InitTextureShadowMap(ID3D11Device* d3d11Device);
 };

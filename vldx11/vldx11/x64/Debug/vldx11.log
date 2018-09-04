@@ -1,3 +1,5 @@
-﻿  Renderer.cpp
+﻿  Texture.cpp
   c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
+e:\projects\visual_studio_projects\vldx11\vldx11\texture.cpp(253): warning C4715: 'RenderTexture::InitTextureShadowMap': not all control paths return a value
+e:\projects\visual_studio_projects\vldx11\vldx11\texture.cpp(184): warning C4715: 'RenderTexture::InitTextureDefault': not all control paths return a value
   vldx11.vcxproj -> E:\Projects\Visual_Studio_Projects\vldx11\x64\Debug\vldx11.exe

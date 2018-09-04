@@ -13,9 +13,9 @@ Object::~Object()
 
 bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11DevCon)
 {
-	if (pDrawable != nullptr&&pTransform != nullptr)
+	if (pObjectUniform != nullptr&&pTransform != nullptr)
 	{
-		pDrawable->ApplyTransform(pTransform);
+		pObjectUniform->ApplyTransform(pTransform);
 	}
 	if (pCamera != nullptr&&pFrameUniform != nullptr)
 	{
@@ -43,21 +43,21 @@ void Object::UpdateObject(ID3D11DeviceContext *d3d11DevCon)
 	{
 		pCamera->UpdatePosition();//update position first because of orbit camera
 	}
-	if (pTransform != nullptr && pDrawable != nullptr)
+	if (pObjectUniform != nullptr && pTransform != nullptr)
 	{
-		pDrawable->ApplyTransform(pTransform);
-		pDrawable->ObjectUniformBufferData(d3d11DevCon);
+		//wait and upload in UpdateScene()
+		pObjectUniform->ApplyTransform(pTransform);
 	}
-	if (pCamera!=nullptr && pFrameUniform != nullptr )
+	if (pFrameUniform != nullptr && pCamera!=nullptr)
 	{
+		//wait and upload in UpdateScene()
 		pFrameUniform->ApplyCamera(pCamera);
-		pFrameUniform->FrameUniformBufferData(d3d11DevCon);
 	}
 	if (pSceneUniform != nullptr && (pCamera != nullptr || pLight != nullptr))
 	{
+		//wait and upload in UpdateScene()
 		if(pCamera != nullptr) pSceneUniform->ApplyCamera(pCamera);
 		if(pLight != nullptr) pSceneUniform->ApplyLight(pLight);
-		pSceneUniform->SceneUniformBufferData(d3d11DevCon);
 	}
 }
 
@@ -87,6 +87,11 @@ void Object::SetLight(Light *_pLight)
 void Object::SetTransform(Transform *_pTransform)
 {
 	pTransform = _pTransform;
+}
+
+void Object::ConnectObjectUniform(ObjectUniform *_pObjectUniform)
+{
+	pObjectUniform = _pObjectUniform;
 }
 
 void Object::ConnectFrameUniform(FrameUniform *_pFrameUniform)

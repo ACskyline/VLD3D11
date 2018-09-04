@@ -1,12 +1,5 @@
+#include "Renderer.h"
 #include "Object.h"
-#include "DrawableGroup.h"
-
-IDXGISwapChain* SwapChain;
-ID3D11Device* d3d11Device;
-ID3D11DeviceContext* d3d11DevCon;
-ID3D11RenderTargetView* renderTargetView;
-ID3D11Texture2D* depthStencilBuffer;
-ID3D11DepthStencilView* depthStencilView;
 
 D3D11_INPUT_ELEMENT_DESC layout[] =
 {
@@ -18,26 +11,22 @@ D3D11_INPUT_ELEMENT_DESC layout[] =
 
 LPCTSTR WndClassName = "firstwindow";
 HWND hwnd = NULL;
-const int Width = 800;
-const int Height = 600;
-uint32_t frame = 0;
-XMVECTORF32 bgColor{ 0.3f, 0.3f, 0.8f, 1.f };
 
 IDirectInputDevice8* DIKeyboard;
 IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 LPDIRECTINPUT8 DirectInput;
+const uint32_t WIDTH = 800;
+const uint32_t HEIGHT = 600;
 
-vector<Object*> GlobalObjVec;
-vector<DrawableGroup*> GlobalDrawableGrpVec;
-
+Renderer mRenderer(WIDTH, HEIGHT);
 CubeMesh mMeshVolume;
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
 PlaneMesh mMeshPlane;
 Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialStandard(L"myVert.hlsl", L"myPixelHalfLambertPointLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialStandard(L"myVert.hlsl", L"myPixelTexturePointLightShadow.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
@@ -46,9 +35,14 @@ Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformPlane(XMFLOAT3(0, -10, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(50, 1, 50));
-OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, Width / (float)Height, 0.01f, 100.0f);
+OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 0.01f, 100.0f);
 PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
-Texture mTex(Texture::Albedo, L"checkerboard.jpg");
+Texture mTex(Texture::TextureType::Default, L"checkerboard.jpg");
+RenderTexture mRTex(RenderTexture::RenderTextureType::Default);
+ObjectUniform mObjUniVolume;
+ObjectUniform mObjUniAxis;
+ObjectUniform mObjUniGrid;
+ObjectUniform mObjUniPlane;
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
 Object objVolume;
@@ -60,6 +54,12 @@ Object objPlane;
 DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
 DrawableGroup grpDrawableGizmo(DrawableGroup::DrawableGroupType::Gizmo);
 DrawableGroup grpDrawableStandard(DrawableGroup::DrawableGroupType::Standard);
+
+vector<Object*> GlobalObjVec; 
+vector<DrawableGroup*> GlobalDrawableGrpVec;
+vector<ObjectUniform*> GlobalObjectUniVec;
+vector<FrameUniform*> GlobalFrameUniVec;
+vector<SceneUniform*> GlobalSceneUniVec;
 
 void InitConsole()
 {
@@ -125,106 +125,6 @@ bool InitWindow(HINSTANCE hInstance, int ShowWnd, int width, int height, bool wi
 	return true;
 }
 
-bool InitDepthStencilView()
-{
-	HRESULT hr;
-	//Describe our Depth/Stencil Buffer
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-	depthStencilDesc.Width = Width;
-	depthStencilDesc.Height = Height;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 1;
-	depthStencilDesc.SampleDesc.Quality = 0;
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
-
-	hr = d3d11Device->CreateTexture2D(&depthStencilDesc, NULL, &depthStencilBuffer);
-	if (!CheckError(hr, nullptr)) return false;
-
-	hr = d3d11Device->CreateDepthStencilView(depthStencilBuffer, NULL, &depthStencilView);
-	if (!CheckError(hr, nullptr)) return false;
-
-	return true;
-}
-
-bool InitD3D11App()
-{
-	HRESULT hr;
-
-	//Describe our Buffer
-	DXGI_MODE_DESC bufferDesc;
-
-	ZeroMemory(&bufferDesc, sizeof(DXGI_MODE_DESC));
-
-	bufferDesc.Width = Width;
-	bufferDesc.Height = Height;
-	bufferDesc.RefreshRate.Numerator = 60;
-	bufferDesc.RefreshRate.Denominator = 1;
-	bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	bufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	bufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	//Describe our SwapChain
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-
-	ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-
-	swapChainDesc.BufferDesc = bufferDesc;
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;//double buffer
-	swapChainDesc.OutputWindow = hwnd;
-	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-	//Create our SwapChain
-	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, NULL, NULL, D3D11_SDK_VERSION, &swapChainDesc, &SwapChain, &d3d11Device, NULL, &d3d11DevCon);
-	if (!CheckError(hr, nullptr)) return false;
-
-	//Create our BackBuffer
-	ID3D11Texture2D* BackBuffer;
-	SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&BackBuffer);
-
-	//Create our Render Target
-	hr = d3d11Device->CreateRenderTargetView(BackBuffer, NULL, &renderTargetView);
-	BackBuffer->Release();
-	if (!CheckError(hr, nullptr)) return false;
-
-	//Create our Depth Stencil View
-	if (!InitDepthStencilView()) return false;
-
-	//Create shadow map resource
-	//if (!InitShadowMapResource()) return false;
-
-	//Set our Render Target
-	d3d11DevCon->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-
-	return true;
-}
-
-void InitViewport()
-{
-	//Create the Viewport
-	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = Width;
-	viewport.Height = Height;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	//Set the Viewport
-	d3d11DevCon->RSSetViewports(1, &viewport);
-}
-
 bool InitDirectInput(HINSTANCE hInstance)
 {
 	HRESULT hr;
@@ -253,67 +153,71 @@ bool InitDirectInput(HINSTANCE hInstance)
 	return true;
 }
 
-bool InitLevel()
+bool InitScene()
 {
-	printf("init Level start!\n");
-	InitViewport();
+	printf("init scene start!\n");
 
 	//texture
 	mMaterialVolume.SetTexture(MAIN_TEXTURE_SLOT, &mTex);
+	mMaterialStandard.SetTexture(MAIN_TEXTURE_SLOT, &mTex);
+	mMaterialStandard.SetTexture(SHADOW_TEXTURE_SLOT, &mRTex);
 
 	//drawable
-	mDrawableVolume.ApplyColor(1, 1, 1, 1);
-	mDrawableAxis.ApplyColor(1, 1, 1, 1);
-	mDrawableGrid.ApplyColor(1, 1, 1, 1);
-	mDrawablePlane.ApplyColor(1, 1, 1, 1);
+	mDrawableVolume.ConnectObjectUniform(&mObjUniVolume);
+	mDrawableVolume.ConnectFrameUniform(&mFrameUniform);
+	mDrawableVolume.ConnectSceneUniform(&mSceneUniform);
 
+	mDrawableAxis.ConnectObjectUniform(&mObjUniAxis);
+	mDrawableAxis.ConnectFrameUniform(&mFrameUniform);
+	mDrawableAxis.ConnectSceneUniform(&mSceneUniform);
+
+	mDrawableGrid.ConnectObjectUniform(&mObjUniGrid);
+	mDrawableGrid.ConnectFrameUniform(&mFrameUniform);
+	mDrawableGrid.ConnectSceneUniform(&mSceneUniform);
+
+	mDrawablePlane.ConnectObjectUniform(&mObjUniPlane);
+	mDrawablePlane.ConnectFrameUniform(&mFrameUniform);
+	mDrawablePlane.ConnectSceneUniform(&mSceneUniform);
+
+	///////////////////////////////////////////////////////////////////
 	grpDrawableVolume.AddDrawable(&mDrawableVolume);
-	grpDrawableVolume.InitDrawableGroup(d3d11Device);
 
 	grpDrawableGizmo.AddDrawable(&mDrawableAxis);
 	grpDrawableGizmo.AddDrawable(&mDrawableGrid);
-	grpDrawableGizmo.InitDrawableGroup(d3d11Device);
 
 	grpDrawableStandard.AddDrawable(&mDrawablePlane);
-	grpDrawableStandard.InitDrawableGroup(d3d11Device);
 
+	///////////////////////////////////////////////////////////////////
 	mFrameUniform.ApplyCol(1, 1, 1, 1);
 	mFrameUniform.ApplyIntensity(5.f);
-	mFrameUniform.ApplyFrameNum(frame);
+	mFrameUniform.ApplyFrameNum(mRenderer.frame);
 
 	mSceneUniform.ApplyStep(50);
 
+	///////////////////////////////////////////////////////////////////
 	objVolume.SetTransform(&mTransformVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
+	objVolume.ConnectObjectUniform(&mObjUniVolume);
 
 	objAxis.SetTransform(&mTransformAxis);
 	objAxis.SetDrawable(&mDrawableAxis);
+	objAxis.ConnectObjectUniform(&mObjUniAxis);
 
 	objGrid.SetTransform(&mTransformGrid);
 	objGrid.SetDrawable(&mDrawableGrid);
+	objGrid.ConnectObjectUniform(&mObjUniGrid);
 	
 	objPlane.SetTransform(&mTransformPlane);
 	objPlane.SetDrawable(&mDrawablePlane);
+	objPlane.ConnectObjectUniform(&mObjUniPlane);
 
 	objCamera.SetCamera(&mCamera);
 	objCamera.ConnectFrameUniform(&mFrameUniform);
 
 	objLight.SetLight(&mLight);
 	objLight.ConnectSceneUniform(&mSceneUniform);
-	
-	if (!objVolume.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!objAxis.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!objGrid.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!objPlane.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!objCamera.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!objLight.InitObject(d3d11Device, d3d11DevCon)) return false;
-	if (!mFrameUniform.InitFrameUniform(d3d11Device, d3d11DevCon)) return false;
-	if (!mSceneUniform.InitSceneUniform(d3d11Device, d3d11DevCon)) return false;
 
-	GlobalDrawableGrpVec.push_back(&grpDrawableVolume);
-	GlobalDrawableGrpVec.push_back(&grpDrawableGizmo);
-	GlobalDrawableGrpVec.push_back(&grpDrawableStandard);
-
+	///////////////////////////////////////////////////////////////////
 	GlobalObjVec.push_back(&objVolume);
 	GlobalObjVec.push_back(&objGrid);
 	GlobalObjVec.push_back(&objAxis);
@@ -321,8 +225,60 @@ bool InitLevel()
 	GlobalObjVec.push_back(&objCamera);
 	GlobalObjVec.push_back(&objLight);
 
-	printf("init level finish!\n");
+	GlobalObjectUniVec.push_back(&mObjUniVolume);
+	GlobalObjectUniVec.push_back(&mObjUniPlane);
+	GlobalObjectUniVec.push_back(&mObjUniAxis);
+	GlobalObjectUniVec.push_back(&mObjUniGrid);
+
+	GlobalFrameUniVec.push_back(&mFrameUniform);
+	
+	GlobalSceneUniVec.push_back(&mSceneUniform);
+
+	///////////////////////////////////////////////////////////////////
+	for (auto item = GlobalObjVec.begin(); item != GlobalObjVec.end(); item++)
+	{
+		if (!(*item)->InitObject(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
+	}
+
+	for (auto item = GlobalObjectUniVec.begin(); item != GlobalObjectUniVec.end(); item++)
+	{
+		if (!(*item)->InitObjectUniform(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
+	}
+
+	for (auto item = GlobalFrameUniVec.begin(); item != GlobalFrameUniVec.end(); item++)
+	{
+		if (!(*item)->InitFrameUniform(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
+	}
+
+	for (auto item = GlobalSceneUniVec.begin(); item != GlobalSceneUniVec.end(); item++)
+	{
+		if (!(*item)->InitSceneUniform(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
+	}
+
+	///////////////////////////////////////////////////////////////////
+
+	GlobalDrawableGrpVec.push_back(&grpDrawableVolume);
+	GlobalDrawableGrpVec.push_back(&grpDrawableGizmo);
+	GlobalDrawableGrpVec.push_back(&grpDrawableStandard);
+
+	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	{
+		if (!(*item)->InitDrawableGroup(mRenderer.d3d11Device)) return false;
+	}
+
+	printf("init scene finish!\n");
 	return true;
+}
+
+void DrawScene()
+{
+	//Crucial
+	mRenderer.SetRenderTarget(&mRTex);
+	mRenderer.DrawGroups(GlobalDrawableGrpVec);
+	mRenderer.SetDefaultRenderTarget();
+	mRenderer.DrawGroups(GlobalDrawableGrpVec);
+	//Present the backbuffer to the screen
+	mRenderer.SwapChain->Present(0, 0);
 }
 
 void DetectInput()
@@ -452,30 +408,31 @@ void DetectInput()
 
 void UpdateScene()
 {
+	mRenderer.frame++;
+
 	for (auto item = GlobalObjVec.begin(); item != GlobalObjVec.end(); item++)
 	{
-		(*item)->UpdateObject(d3d11DevCon);
+		(*item)->UpdateObject(mRenderer.d3d11DevCon);
 	}
 
-	frame++;
-	mFrameUniform.ApplyFrameNum(frame);
-}
-
-void DrawScene()
-{
-	//Clear our backbuffer to the updated color
-	d3d11DevCon->ClearRenderTargetView(renderTargetView, bgColor);
-	d3d11DevCon->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	//Draw Call
-	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	//upload to GPU
+	for (auto item = GlobalObjectUniVec.begin(); item != GlobalObjectUniVec.end(); item++)
 	{
-		(*item)->Draw(d3d11DevCon);
+		if((*item)->NeedToUpload()) (*item)->ObjectUniformBufferData(mRenderer.d3d11DevCon);
 	}
 
+	//upload to GPU
+	for (auto item = GlobalFrameUniVec.begin(); item != GlobalFrameUniVec.end(); item++)
+	{
+		(*item)->ApplyFrameNum(mRenderer.frame);
+		if ((*item)->NeedToUpload()) (*item)->FrameUniformBufferData(mRenderer.d3d11DevCon);
+	}
 
-	//Present the backbuffer to the screen
-	SwapChain->Present(0, 0);
+	//upload to GPU
+	for (auto item = GlobalSceneUniVec.begin(); item != GlobalSceneUniVec.end(); item++)
+	{
+		if ((*item)->NeedToUpload()) (*item)->SceneUniformBufferData(mRenderer.d3d11DevCon);
+	}
 }
 
 int Messageloop()
@@ -502,17 +459,8 @@ int Messageloop()
 	return msg.wParam;
 }
 
-void ReleaseObjects()
+void Release()
 {
-	//Release the COM Objects we created
-	SwapChain->Release();
-	d3d11Device->Release();
-	d3d11DevCon->Release();
-
-	renderTargetView->Release();
-	depthStencilView->Release();
-	depthStencilBuffer->Release();
-
 	DIKeyboard->Unacquire();
 	DIMouse->Unacquire();
 	DirectInput->Release();
@@ -522,13 +470,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	InitConsole();
 
-	if (!InitWindow(hInstance, nShowCmd, Width, Height, true))
+	if (!InitWindow(hInstance, nShowCmd, mRenderer.width, mRenderer.height, true))
 	{
 		MessageBox(0, "Window Initialization - Failed", "Error", MB_OK);
 		return 0;
 	}
 
-	if (!InitD3D11App())    //Initialize Direct3D
+	if (!mRenderer.InitRenderer(hwnd))    //Initialize Direct3D
 	{
 		MessageBox(0, "Direct3D Initialization - Failed", "Error", MB_OK);
 		return 0;
@@ -540,7 +488,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	if (!InitLevel())    //Initialize our scene
+	if (!InitScene())    //Initialize our scene
 	{
 		MessageBox(0, "Level Initialization - Failed", "Error", MB_OK);
 		return 0;
@@ -548,7 +496,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Messageloop();
 
-	ReleaseObjects();
+	Release();
 
 	return 0;
 }

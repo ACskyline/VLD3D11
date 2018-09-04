@@ -39,9 +39,10 @@ public:
 	void ApplyIntensity(float intensity);
 	void ApplyFrameNum(uint32_t frameNum);
 	bool InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
+	bool NeedToUpload();
 
 private:
-
+	bool needToUpload;
 	FrameUniformData frameUniformData;
 	ID3D11Buffer * frameUniformBuffer;
 	void SetVP(Camera* pCamera);
