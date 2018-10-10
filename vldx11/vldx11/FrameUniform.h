@@ -6,6 +6,7 @@ class FrameUniform
 {
 	struct FrameUniformData
 	{
+		XMFLOAT4X4 P;
 		XMFLOAT4X4 VP;
 		XMFLOAT4X4 VP_INV;
 		XMFLOAT4 COL;
@@ -16,6 +17,7 @@ class FrameUniform
 		uint32_t PAD2;//padding
 		uint32_t PAD3;//padding
 		FrameUniformData() :
+			P(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			VP(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			VP_INV(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			COL(XMFLOAT4(1, 1, 1, 1)),
@@ -47,5 +49,7 @@ private:
 	ID3D11Buffer * frameUniformBuffer;
 	void SetVP(Camera* pCamera);
 	void SetVP_INV(Camera* pCamera);
+	void SetP_VP_INV(Camera* pCamera);
+	bool initiated;
 };
 

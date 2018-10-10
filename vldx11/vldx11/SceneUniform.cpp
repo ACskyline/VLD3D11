@@ -2,7 +2,7 @@
 
 
 
-SceneUniform::SceneUniform() : sceneUniformBuffer(nullptr), needToUpload(false)
+SceneUniform::SceneUniform() : sceneUniformBuffer(nullptr), needToUpload(false), initiated(false)
 {
 }
 
@@ -76,10 +76,14 @@ void SceneUniform::ApplyStep(uint32_t step)
 
 bool SceneUniform::InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!CreateBuffer(d3d11Device)) return false;
-	SceneUniformBufferData(d3d11DevCon);
-	SetSceneUniformBufferVSPS(d3d11DevCon);
-	printf("frameUniform create buffer done!\n");
+	if (!initiated)
+	{
+		if (!CreateBuffer(d3d11Device)) return false;
+		SceneUniformBufferData(d3d11DevCon);
+		SetSceneUniformBufferVSPS(d3d11DevCon);
+		printf("frameUniform create buffer done!\n");
+		initiated = true;
+	}
 	return true;
 }
 

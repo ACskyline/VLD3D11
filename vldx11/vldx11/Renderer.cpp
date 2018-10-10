@@ -2,8 +2,8 @@
 
 
 
-Renderer::Renderer(uint32_t _width, uint32_t _height) :
-	width(_width), height(_height), frame(0), bgColor({ 0.3f, 0.3f, 0.8f, 1.f }),
+Renderer::Renderer(uint32_t _width, uint32_t _height, XMVECTORF32 _clearColor, float _clearDepth, uint8_t _clearStencil) :
+	width(_width), height(_height), frame(0), clearColor(_clearColor), clearDepth(_clearDepth), clearStencil(_clearStencil),
 	SwapChain(nullptr), 
 	d3d11Device(nullptr), 
 	d3d11DevCon(nullptr), 
@@ -153,13 +153,32 @@ void Renderer::InitViewport()
 
 void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec)
 {
-	//Clear our backbuffer to the updated color
-	d3d11DevCon->ClearRenderTargetView(currentRTV, bgColor);
-	d3d11DevCon->ClearDepthStencilView(currentDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
 	//Draw Call
 	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
 	{
 		(*item)->Draw(d3d11DevCon);
 	}
+}
+
+void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material* _pMat)
+{
+	//Draw Call
+	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	{
+		(*item)->Draw(d3d11DevCon, _pMat);
+	}
+}
+
+void Renderer::ClearCurrentRenderTargetDefault()
+{
+	//Clear our backbuffer to the updated color
+	if(currentRTV) d3d11DevCon->ClearRenderTargetView(currentRTV, clearColor);
+	if(currentDSV) d3d11DevCon->ClearDepthStencilView(currentDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
+}
+
+void Renderer::ClearCurrentRenderTarget(XMVECTORF32 _clearColor, float _clearDepth, uint8_t _clearStencil)
+{
+	//Clear our backbuffer to the updated color
+	if (currentRTV) d3d11DevCon->ClearRenderTargetView(currentRTV, _clearColor);
+	if (currentDSV) d3d11DevCon->ClearDepthStencilView(currentDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, _clearDepth, _clearStencil);
 }

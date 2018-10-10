@@ -45,5 +45,6 @@ private:
 	bool needToUpload;
 	SceneUniformData sceneUniformData;
 	ID3D11Buffer* sceneUniformBuffer;
+	bool initiated;
 };
 

@@ -3,7 +3,10 @@
 
 
 Object::Object() : pDrawable(nullptr),
-				   pCamera(nullptr), pLight(nullptr), pTransform(nullptr)
+				   pCamera(nullptr), 
+				   pLight(nullptr),
+				   pTransform(nullptr),
+				   initiated(false)
 {
 }
 
@@ -13,27 +16,30 @@ Object::~Object()
 
 bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11DevCon)
 {
-	if (pObjectUniform != nullptr&&pTransform != nullptr)
+	if (!initiated)
 	{
-		pObjectUniform->ApplyTransform(pTransform);
+		if (pObjectUniform != nullptr&&pTransform != nullptr)
+		{
+			pObjectUniform->ApplyTransform(pTransform);
+		}
+		if (pCamera != nullptr&&pFrameUniform != nullptr)
+		{
+			pFrameUniform->ApplyCamera(pCamera);
+		}
+		if (pLight != nullptr&&pSceneUniform != nullptr)
+		{
+			pSceneUniform->ApplyLight(pLight);
+		}
+		if (pCamera != nullptr&&pSceneUniform != nullptr)
+		{
+			pSceneUniform->ApplyCamera(pCamera);
+		}
+		if (pDrawable != nullptr)
+		{
+			if(!pDrawable->InitDrawable(d3d11Device, d3d11DevCon)) return false;
+		}
+		initiated = true;
 	}
-	if (pCamera != nullptr&&pFrameUniform != nullptr)
-	{
-		pFrameUniform->ApplyCamera(pCamera);
-	}
-	if (pLight != nullptr&&pSceneUniform != nullptr)
-	{
-		pSceneUniform->ApplyLight(pLight);
-	}
-	if (pCamera != nullptr&&pSceneUniform != nullptr)
-	{
-		pSceneUniform->ApplyCamera(pCamera);
-	}
-	if (pDrawable != nullptr)
-	{
-		if (!pDrawable->IsInitiated()) pDrawable->InitDrawable(d3d11Device, d3d11DevCon);
-	}
-
 	return true;
 }
 
@@ -72,34 +78,41 @@ void Object::DrawObject(ID3D11DeviceContext *d3d11DevCon)
 void Object::SetDrawable(Drawable *_pDrawable)
 {
 	pDrawable = _pDrawable;
+	initiated = false;
 }
 
 void Object::SetCamera(Camera *_pCamera)
 {
 	pCamera = _pCamera;
+	initiated = false;
 }
 
 void Object::SetLight(Light *_pLight)
 {
 	pLight = _pLight;
+	initiated = false;
 }
 
 void Object::SetTransform(Transform *_pTransform)
 {
 	pTransform = _pTransform;
+	initiated = false;
 }
 
 void Object::ConnectObjectUniform(ObjectUniform *_pObjectUniform)
 {
 	pObjectUniform = _pObjectUniform;
+	initiated = false;
 }
 
 void Object::ConnectFrameUniform(FrameUniform *_pFrameUniform)
 {
 	pFrameUniform = _pFrameUniform;
+	initiated = false;
 }
 
 void Object::ConnectSceneUniform(SceneUniform *_pSceneUniform)
 {
 	pSceneUniform = _pSceneUniform;
+	initiated = false;
 }

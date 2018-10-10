@@ -16,6 +16,7 @@ public:
 	bool CreateBuffer(ID3D11Device* d3d11Device);
 	void VertexIndexBufferData(ID3D11DeviceContext* d3d11DevCon);
 	void Draw(ID3D11DeviceContext* d3d11DevCon);
+	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat);
 	bool InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
 	bool IsInitiated();
 	void ConnectObjectUniform(ObjectUniform *_pObjectUniform);

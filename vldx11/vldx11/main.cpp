@@ -19,30 +19,31 @@ LPDIRECTINPUT8 DirectInput;
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
-Renderer mRenderer(WIDTH, HEIGHT);
+Renderer mRenderer(WIDTH, HEIGHT, XMVECTORF32{0.3f, 0.3f, 0.8f, 1.f}, 1.f, 0);
 CubeMesh mMeshVolume;
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
-PlaneMesh mMeshPlane;
+PlaneMesh mMeshDebugShadowMap;
 Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialStandard(L"myVert.hlsl", L"myPixelTexturePointLightShadow.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialDebugShadowMap(L"myVertUI.hlsl", L"myPixelDebugShadowMap.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialShadowPass(L"myVert.hlsl", L"myPixelShadowPass.hlsl", layout, ARRAYSIZE(layout));
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
-Drawable mDrawablePlane(Drawable::DrawableType::TrianlgeList, &mMeshPlane, &mMaterialStandard);
+Drawable mDrawableDebugShadowMap(Drawable::DrawableType::TrianlgeList, &mMeshDebugShadowMap, &mMaterialDebugShadowMap);
 Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10, 10));
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
-Transform mTransformPlane(XMFLOAT3(0, -10, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(50, 1, 50));
-OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 0.01f, 100.0f);
+Transform mTransformDebugShadowMap(XMFLOAT3(-0.75f, 0.75f, 0.1f), XMFLOAT3(-90, 0, 0), XMFLOAT3(0.5, 1, 0.5));
+OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 1.f, 50.f);
 PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
 Texture mTex(Texture::TextureType::Default, L"checkerboard.jpg");
-RenderTexture mRTex(RenderTexture::RenderTextureType::Default);
+RenderTexture mRTex(RenderTexture::RenderTextureType::ShadowMap, 800, 600);
 ObjectUniform mObjUniVolume;
 ObjectUniform mObjUniAxis;
 ObjectUniform mObjUniGrid;
-ObjectUniform mObjUniPlane;
+ObjectUniform mObjUniDebugShadowMap;
 FrameUniform mFrameUniform;
 SceneUniform mSceneUniform;
 Object objVolume;
@@ -50,12 +51,14 @@ Object objLight;
 Object objCamera;
 Object objAxis;
 Object objGrid;
-Object objPlane;
+Object objDebugShadowMap;
 DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
 DrawableGroup grpDrawableGizmo(DrawableGroup::DrawableGroupType::Gizmo);
 DrawableGroup grpDrawableStandard(DrawableGroup::DrawableGroupType::Standard);
+DrawableGroup grpDrawableUI(DrawableGroup::DrawableGroupType::UI);
 
 vector<Object*> GlobalObjVec; 
+vector<DrawableGroup*> GlobalDrawableGrpVecShadowPass;
 vector<DrawableGroup*> GlobalDrawableGrpVec;
 vector<ObjectUniform*> GlobalObjectUniVec;
 vector<FrameUniform*> GlobalFrameUniVec;
@@ -157,83 +160,83 @@ bool InitScene()
 {
 	printf("init scene start!\n");
 
-	//texture
+	//materials
+	///////////////////////////////////////////////////////////////////
+	//this material needs to be initialized explictly for it is not attached to a drawable here
+	if (!mMaterialShadowPass.InitMaterial(mRenderer.d3d11Device)) return false;
+	//these materials don't need to be initialized explictly for they are going to be initialized with the drawable,
+	//initializing them here is just for clarity, in the later initialization, they will check the initialized flag and
+	//stop initializing if they are already initialized
 	mMaterialVolume.SetTexture(MAIN_TEXTURE_SLOT, &mTex);
-	mMaterialStandard.SetTexture(MAIN_TEXTURE_SLOT, &mTex);
-	mMaterialStandard.SetTexture(SHADOW_TEXTURE_SLOT, &mRTex);
+	if (!mMaterialVolume.InitMaterial(mRenderer.d3d11Device)) return false;
+	mMaterialDebugShadowMap.SetTexture(SHADOW_TEXTURE_SLOT, &mRTex);
+	if (!mMaterialDebugShadowMap.InitMaterial(mRenderer.d3d11Device)) return false;
 
-	//drawable
+	//drawables
+	///////////////////////////////////////////////////////////////////
 	mDrawableVolume.ConnectObjectUniform(&mObjUniVolume);
 	mDrawableVolume.ConnectFrameUniform(&mFrameUniform);
 	mDrawableVolume.ConnectSceneUniform(&mSceneUniform);
-
 	mDrawableAxis.ConnectObjectUniform(&mObjUniAxis);
 	mDrawableAxis.ConnectFrameUniform(&mFrameUniform);
 	mDrawableAxis.ConnectSceneUniform(&mSceneUniform);
-
 	mDrawableGrid.ConnectObjectUniform(&mObjUniGrid);
 	mDrawableGrid.ConnectFrameUniform(&mFrameUniform);
 	mDrawableGrid.ConnectSceneUniform(&mSceneUniform);
+	mDrawableDebugShadowMap.ConnectObjectUniform(&mObjUniDebugShadowMap);
+	mDrawableDebugShadowMap.ConnectFrameUniform(&mFrameUniform);
+	mDrawableDebugShadowMap.ConnectSceneUniform(&mSceneUniform);
 
-	mDrawablePlane.ConnectObjectUniform(&mObjUniPlane);
-	mDrawablePlane.ConnectFrameUniform(&mFrameUniform);
-	mDrawablePlane.ConnectSceneUniform(&mSceneUniform);
-
+	//drawable groups
 	///////////////////////////////////////////////////////////////////
 	grpDrawableVolume.AddDrawable(&mDrawableVolume);
-
 	grpDrawableGizmo.AddDrawable(&mDrawableAxis);
 	grpDrawableGizmo.AddDrawable(&mDrawableGrid);
+	grpDrawableUI.AddDrawable(&mDrawableDebugShadowMap);
+	//grpDrawableStandard.AddDrawable();
 
-	grpDrawableStandard.AddDrawable(&mDrawablePlane);
-
+	//uniforms
 	///////////////////////////////////////////////////////////////////
 	mFrameUniform.ApplyCol(1, 1, 1, 1);
 	mFrameUniform.ApplyIntensity(5.f);
 	mFrameUniform.ApplyFrameNum(mRenderer.frame);
-
 	mSceneUniform.ApplyStep(50);
 
+	//objects
 	///////////////////////////////////////////////////////////////////
 	objVolume.SetTransform(&mTransformVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
 	objVolume.ConnectObjectUniform(&mObjUniVolume);
-
 	objAxis.SetTransform(&mTransformAxis);
 	objAxis.SetDrawable(&mDrawableAxis);
 	objAxis.ConnectObjectUniform(&mObjUniAxis);
-
 	objGrid.SetTransform(&mTransformGrid);
 	objGrid.SetDrawable(&mDrawableGrid);
 	objGrid.ConnectObjectUniform(&mObjUniGrid);
-	
-	objPlane.SetTransform(&mTransformPlane);
-	objPlane.SetDrawable(&mDrawablePlane);
-	objPlane.ConnectObjectUniform(&mObjUniPlane);
-
+	objDebugShadowMap.SetTransform(&mTransformDebugShadowMap);
+	objDebugShadowMap.SetDrawable(&mDrawableDebugShadowMap);
+	objDebugShadowMap.ConnectObjectUniform(&mObjUniDebugShadowMap);
 	objCamera.SetCamera(&mCamera);
 	objCamera.ConnectFrameUniform(&mFrameUniform);
-
 	objLight.SetLight(&mLight);
 	objLight.ConnectSceneUniform(&mSceneUniform);
 
+	//init object vectors
 	///////////////////////////////////////////////////////////////////
 	GlobalObjVec.push_back(&objVolume);
 	GlobalObjVec.push_back(&objGrid);
 	GlobalObjVec.push_back(&objAxis);
-	GlobalObjVec.push_back(&objPlane);
+	GlobalObjVec.push_back(&objDebugShadowMap);
 	GlobalObjVec.push_back(&objCamera);
 	GlobalObjVec.push_back(&objLight);
-
 	GlobalObjectUniVec.push_back(&mObjUniVolume);
-	GlobalObjectUniVec.push_back(&mObjUniPlane);
+	GlobalObjectUniVec.push_back(&mObjUniDebugShadowMap);
 	GlobalObjectUniVec.push_back(&mObjUniAxis);
 	GlobalObjectUniVec.push_back(&mObjUniGrid);
-
 	GlobalFrameUniVec.push_back(&mFrameUniform);
-	
 	GlobalSceneUniVec.push_back(&mSceneUniform);
 
+	//init objects in object vectors
 	///////////////////////////////////////////////////////////////////
 	for (auto item = GlobalObjVec.begin(); item != GlobalObjVec.end(); item++)
 	{
@@ -255,13 +258,26 @@ bool InitScene()
 		if (!(*item)->InitSceneUniform(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
 	}
 
+	//init drawable group vectors
 	///////////////////////////////////////////////////////////////////
-
+	// Second pass drawable groups
 	GlobalDrawableGrpVec.push_back(&grpDrawableVolume);
 	GlobalDrawableGrpVec.push_back(&grpDrawableGizmo);
 	GlobalDrawableGrpVec.push_back(&grpDrawableStandard);
+	GlobalDrawableGrpVec.push_back(&grpDrawableUI);
+	// Shadow pass drawable groups
+	GlobalDrawableGrpVecShadowPass.push_back(&grpDrawableVolume);
+	GlobalDrawableGrpVecShadowPass.push_back(&grpDrawableStandard);
 
+	//init drawable groups in drawable group vectors
+	///////////////////////////////////////////////////////////////////
+	// Second pass drawable groups
 	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	{
+		if (!(*item)->InitDrawableGroup(mRenderer.d3d11Device)) return false;
+	}
+	// Shadow pass drawable groups
+	for (auto item = GlobalDrawableGrpVecShadowPass.begin(); item != GlobalDrawableGrpVecShadowPass.end(); item++)
 	{
 		if (!(*item)->InitDrawableGroup(mRenderer.d3d11Device)) return false;
 	}
@@ -273,9 +289,13 @@ bool InitScene()
 void DrawScene()
 {
 	//Crucial
+	//first pass
 	mRenderer.SetRenderTarget(&mRTex);
-	mRenderer.DrawGroups(GlobalDrawableGrpVec);
+	mRenderer.ClearCurrentRenderTarget({1.f}, 1.f, 0);//since I know this render target is DXGI_FORMAT_R16_FLOAT, I can supply only the red channel
+	mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass);
+	//second pass
 	mRenderer.SetDefaultRenderTarget();
+	mRenderer.ClearCurrentRenderTargetDefault();
 	mRenderer.DrawGroups(GlobalDrawableGrpVec);
 	//Present the backbuffer to the screen
 	mRenderer.SwapChain->Present(0, 0);
@@ -369,16 +389,16 @@ void DetectInput()
 	{
 		if (mouseCurrState.lX != 0)
 		{
-			mTransformVolume.rotation.y += mouseCurrState.lX * 0.01;
+			mTransformVolume.rotation.y += mouseCurrState.lX * 0.1;
 		}
 		if (mouseCurrState.lY != 0)
 		{
-			mTransformVolume.rotation.x += mouseCurrState.lY * 0.01;
+			mTransformVolume.rotation.x += mouseCurrState.lY * 0.1;
 			
 		}
-		if (mouseCurrState.lZ != 0)
+		if (mouseCurrState.rgbButtons[0] > 0)//MLB
 		{
-			mTransformVolume.rotation.z += mouseCurrState.lZ * 0.002;
+			mTransformVolume.rotation.z += 0.1;
 		}
 	}
 	else

@@ -9,7 +9,7 @@ public:
 	~Transform();
 
 	XMFLOAT3 position;
-	XMFLOAT3 rotation;
+	XMFLOAT3 rotation;//in degrees
 	XMFLOAT3 scale;
 };
 

@@ -35,6 +35,6 @@ private:
 	ObjectUniform* pObjectUniform;
 	FrameUniform* pFrameUniform;
 	SceneUniform* pSceneUniform;
-
+	bool initiated;
 };
 

@@ -166,5 +166,14 @@
     <FxCompile Include="myPixelTexturePointLightShadow.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+    <FxCompile Include="myPixelShadowPass.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelDebugShadowMap.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myVertUI.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

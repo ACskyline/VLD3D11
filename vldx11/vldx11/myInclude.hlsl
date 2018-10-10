@@ -7,11 +7,13 @@ cbuffer ObjectUniform : register(b0)
 {
 	float4x4 M;
 	float4x4 M_INV;
+    float4x4 M_INV_TRANS;
 	float4 COL_OBJECT;
 };
 
 cbuffer FrameUniform : register(b1)
 {
+    float4x4 P;
 	float4x4 VP;
 	float4x4 VP_INV;
 	float4 COL_FRAME;
@@ -53,9 +55,14 @@ SamplerState SamplerShadowMap : register(s0);
 Texture2D MainTexture : register(t1);
 SamplerState SamplerMainTexture : register(s1);
 
+float2 FlipV(float2 uv)
+{
+    return float2(uv.x, 1-uv.y);
+}
+
 float AttenuatePointLight(float3 posW)
 {
-    return max(0, -1.f / LIGHT_RADIUS * length(LIGHT_POS - posW) + 1.f);
+    return max(0, 1.f - 1.f / LIGHT_RADIUS * length(LIGHT_POS - posW));
 }
 
 //unit cube face intersection detection

@@ -89,24 +89,27 @@ void Material::SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon)
 
 bool Material::InitMaterial(ID3D11Device* d3d11Device)
 {
-	if (!CreateShader(d3d11Device)) return false;
-	printf("material create buffer done!\n");
-	if (!CreateLayout(d3d11Device)) return false;
-	printf("material create layout done!\n");
-
-	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	if (!initiated)
 	{
-		if (HasTexture(i))
+		if (!CreateShader(d3d11Device)) return false;
+		printf("material create buffer done!\n");
+		if (!CreateLayout(d3d11Device)) return false;
+		printf("material create layout done!\n");
+
+		for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
 		{
-			if (!pTex[i]->IsInitiated())
+			if (HasTexture(i))
 			{
-				if (!pTex[i]->InitTexture(d3d11Device))
-					return false;
+				if (!pTex[i]->IsInitiated())
+				{
+					if (!pTex[i]->InitTexture(d3d11Device))
+						return false;
+				}
 			}
 		}
-	}
 
-	initiated = true;
+		initiated = true;
+	}
 	return true;
 }
 

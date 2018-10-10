@@ -2,7 +2,7 @@
 
 
 
-ObjectUniform::ObjectUniform() : objectUniformBuffer(nullptr), needToUpload(false)
+ObjectUniform::ObjectUniform() : objectUniformBuffer(nullptr), needToUpload(false), initiated(false)
 {
 }
 
@@ -70,9 +70,21 @@ void ObjectUniform::SetM_INV(Transform* pTransform)
 	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));
 }
 
+void ObjectUniform::SetM_INV_TRANS(Transform* pTransform)
+{
+	XMMATRIX tempS = XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z);
+	XMMATRIX tempR = XMMatrixRotationRollPitchYaw(XMConvertToRadians(pTransform->rotation.x), XMConvertToRadians(pTransform->rotation.y), XMConvertToRadians(pTransform->rotation.z));
+	XMMATRIX tempT = XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z);
+	XMMATRIX temp = tempS * tempR * tempT;
+
+	XMStoreFloat4x4(&objectUniformData.M, temp);
+	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));
+	XMStoreFloat4x4(&objectUniformData.M_INV_TRANS, XMMatrixTranspose(XMMatrixInverse(nullptr, temp)));
+}
+
 void ObjectUniform::ApplyTransform(Transform* pTransform)
 {
-	SetM_INV(pTransform);
+	SetM_INV_TRANS(pTransform);
 	needToUpload = true;
 }
 
@@ -84,10 +96,14 @@ void ObjectUniform::ApplyCol(float r, float g, float b, float a)
 
 bool ObjectUniform::InitObjectUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!CreateBuffer(d3d11Device)) return false;
-	ObjectUniformBufferData(d3d11DevCon);
-	SetObjectUniformBufferVSPS(d3d11DevCon);
-	printf("objectUniform create buffer done!\n");
+	if (!initiated)
+	{
+		if (!CreateBuffer(d3d11Device)) return false;
+		ObjectUniformBufferData(d3d11DevCon);
+		SetObjectUniformBufferVSPS(d3d11DevCon);
+		printf("objectUniform create buffer done!\n");
+		initiated = true;
+	}
 	return true;
 }
 

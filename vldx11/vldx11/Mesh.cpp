@@ -17,6 +17,7 @@ void Mesh::DestroyMesh()
 	indexNum = 0;
 	MY_DELETE_ARRAY(vertices);
 	MY_DELETE_ARRAY(indices);
+	initiated = false;
 }
 
 bool Mesh::IsInitiated()
@@ -50,58 +51,61 @@ ConeMesh::~ConeMesh()
 
 bool ConeMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
-
-	vertexNum = segmentNum * 3 + segmentNum * 2 + 1;
-	indexNum = segmentNum * 3 * 2;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
-
-	float deltaAngle = 360.f / segmentNum;
-
-	for (uint32_t i = 0; i < segmentNum; i++)
+	if (!initiated)
 	{
-		//radius is 0.5
-		uint32_t iNext = (i + 1) % segmentNum;
+		DestroyMesh();
+		initiated = false;
 
-		float x = 0.5f * cosf(XMConvertToRadians(deltaAngle * i));
-		float z = 0.5f * sinf(XMConvertToRadians(deltaAngle * i));
-		float xNext = 0.5f * cosf(XMConvertToRadians(deltaAngle * iNext));
-		float zNext = 0.5f * sinf(XMConvertToRadians(deltaAngle * iNext));
-		float xNormal = 0.5f * cosf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
-		float zNormal = 0.5f * sinf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
-		
-		XMFLOAT3 nor = XMFLOAT3(xNormal / sqrtf(0.5*0.5 + 0.25*0.25),
-								0.25 / sqrtf(0.5*0.5 + 0.25*0.25),
-								zNormal / sqrtf(0.5*0.5 + 0.25*0.25));//can be replaced with calculated result but keeping it this way makes it clear
+		vertexNum = segmentNum * 3 + segmentNum * 2 + 1;
+		indexNum = segmentNum * 3 * 2;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
 
-		//for side triangle
-		vertices[i * 5] = Vertex(XMFLOAT3(x, -0.5, z), nor);
-		vertices[i * 5 + 1] = Vertex(XMFLOAT3(0, 0.5, 0), nor);//north pole
-		vertices[i * 5 + 2] = Vertex(XMFLOAT3(xNext, -0.5, zNext), nor);
-		//for bottom triangle
-		vertices[i * 5 + 3] = Vertex(XMFLOAT3(x, -0.5, z), XMFLOAT3(0, -1, 0));
-		vertices[i * 5 + 4] = Vertex(XMFLOAT3(xNext, -0.5, zNext), XMFLOAT3(0, -1, 0));
+		float deltaAngle = 360.f / segmentNum;
+
+		for (uint32_t i = 0; i < segmentNum; i++)
+		{
+			//radius is 0.5
+			uint32_t iNext = (i + 1) % segmentNum;
+
+			float x = 0.5f * cosf(XMConvertToRadians(deltaAngle * i));
+			float z = 0.5f * sinf(XMConvertToRadians(deltaAngle * i));
+			float xNext = 0.5f * cosf(XMConvertToRadians(deltaAngle * iNext));
+			float zNext = 0.5f * sinf(XMConvertToRadians(deltaAngle * iNext));
+			float xNormal = 0.5f * cosf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
+			float zNormal = 0.5f * sinf(XMConvertToRadians(deltaAngle * (i + 0.5f)));
+
+			XMFLOAT3 nor = XMFLOAT3(xNormal / sqrtf(0.5*0.5 + 0.25*0.25),
+				0.25 / sqrtf(0.5*0.5 + 0.25*0.25),
+				zNormal / sqrtf(0.5*0.5 + 0.25*0.25));//can be replaced with calculated result but keeping it this way makes it clear
+
+			//for side triangle
+			vertices[i * 5] = Vertex(XMFLOAT3(x, -0.5, z), nor);
+			vertices[i * 5 + 1] = Vertex(XMFLOAT3(0, 0.5, 0), nor);//north pole
+			vertices[i * 5 + 2] = Vertex(XMFLOAT3(xNext, -0.5, zNext), nor);
+			//for bottom triangle
+			vertices[i * 5 + 3] = Vertex(XMFLOAT3(x, -0.5, z), XMFLOAT3(0, -1, 0));
+			vertices[i * 5 + 4] = Vertex(XMFLOAT3(xNext, -0.5, zNext), XMFLOAT3(0, -1, 0));
+		}
+
+		vertices[vertexNum - 1] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
+
+		for (uint32_t i = 0; i < segmentNum; i++)
+		{
+			//side triangle
+			indices[i * 6] = i * 5;
+			indices[i * 6 + 1] = i * 5 + 1;
+			indices[i * 6 + 2] = i * 5 + 2;
+
+			//bottom triangle
+			indices[i * 6 + 3] = i * 5 + 3;
+			indices[i * 6 + 4] = i * 5 + 4;
+			indices[i * 6 + 5] = vertexNum - 1;
+		}
+
+		initiated = true;
 	}
-
-	vertices[vertexNum - 1] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
-
-	for (uint32_t i = 0; i < segmentNum; i++)
-	{
-		//side triangle
-		indices[i * 6] = i * 5;
-		indices[i * 6 + 1] = i * 5 + 1;
-		indices[i * 6 + 2] = i * 5 + 2;
-
-		//bottom triangle
-		indices[i * 6 + 3] = i * 5 + 3;
-		indices[i * 6 + 4] = i * 5 + 4;
-		indices[i * 6 + 5] = vertexNum - 1;
-	}
-
-	initiated = true;
-	return initiated;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -120,62 +124,65 @@ SphereMesh::~SphereMesh()
 //adjacent triangles share vertices
 bool SphereMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
-
-	vertexNum = azimuthSegmentNum * (altitudeSegmentNum - 1) + 2;
-	indexNum = azimuthSegmentNum * (2 + (altitudeSegmentNum - 2) * 2) * 3;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
-
-	float deltaAzimuthAngle = 360.f / azimuthSegmentNum;
-	float deltaAltitudeAngle = 180.f / altitudeSegmentNum;
-
-	uint32_t count = 0;
-	for (uint32_t i = 0; i < azimuthSegmentNum; i++)
+	if (!initiated)
 	{
-		for (uint32_t j = 1; j <= altitudeSegmentNum - 1; j++)//exclude polar vertex
+		DestroyMesh();
+		initiated = false;
+
+		vertexNum = azimuthSegmentNum * (altitudeSegmentNum - 1) + 2;
+		indexNum = azimuthSegmentNum * (2 + (altitudeSegmentNum - 2) * 2) * 3;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
+
+		float deltaAzimuthAngle = 360.f / azimuthSegmentNum;
+		float deltaAltitudeAngle = 180.f / altitudeSegmentNum;
+
+		uint32_t count = 0;
+		for (uint32_t i = 0; i < azimuthSegmentNum; i++)
 		{
-			float y = 0.5f * cosf(XMConvertToRadians(j * deltaAltitudeAngle));//radius is 0.5
-			float xoz = 0.5f * fabsf(sinf(XMConvertToRadians(j * deltaAltitudeAngle)));//radius is 0.5
-			float x = xoz * cosf(XMConvertToRadians(i * deltaAzimuthAngle));
-			float z = xoz * sinf(XMConvertToRadians(i * deltaAzimuthAngle));
-			vertices[count++] = Vertex(XMFLOAT3(x, y, z), XMFLOAT3(2 * x, 2 * y, 2 * z));//normal is twice as long as radius
+			for (uint32_t j = 1; j <= altitudeSegmentNum - 1; j++)//exclude polar vertex
+			{
+				float y = 0.5f * cosf(XMConvertToRadians(j * deltaAltitudeAngle));//radius is 0.5
+				float xoz = 0.5f * fabsf(sinf(XMConvertToRadians(j * deltaAltitudeAngle)));//radius is 0.5
+				float x = xoz * cosf(XMConvertToRadians(i * deltaAzimuthAngle));
+				float z = xoz * sinf(XMConvertToRadians(i * deltaAzimuthAngle));
+				vertices[count++] = Vertex(XMFLOAT3(x, y, z), XMFLOAT3(2 * x, 2 * y, 2 * z));//normal is twice as long as radius
+			}
 		}
-	}
-	vertices[count++] = Vertex(XMFLOAT3(0, 0.5f, 0), XMFLOAT3(0, 1, 0));//north pole
-	vertices[count++] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
+		vertices[count++] = Vertex(XMFLOAT3(0, 0.5f, 0), XMFLOAT3(0, 1, 0));//north pole
+		vertices[count++] = Vertex(XMFLOAT3(0, -0.5f, 0), XMFLOAT3(0, -1, 0));//south pole
 
-	count = 0;
-	for (uint32_t i = 0; i < azimuthSegmentNum; i++)
-	{
-		uint32_t iNext = (i + 1) % altitudeSegmentNum;
-
-		//quad strap
-		for (uint32_t j = 0; j <= altitudeSegmentNum - 3; j++)
+		count = 0;
+		for (uint32_t i = 0; i < azimuthSegmentNum; i++)
 		{
-			indices[count++] = i * (altitudeSegmentNum - 1) + j;
-			indices[count++] = iNext * (altitudeSegmentNum - 1) + j;
-			indices[count++] = iNext * (altitudeSegmentNum - 1) + j + 1;
+			uint32_t iNext = (i + 1) % altitudeSegmentNum;
 
-			indices[count++] = i * (altitudeSegmentNum - 1) + j;
-			indices[count++] = iNext * (altitudeSegmentNum - 1) + j + 1;
-			indices[count++] = i * (altitudeSegmentNum - 1) + j + 1;
+			//quad strap
+			for (uint32_t j = 0; j <= altitudeSegmentNum - 3; j++)
+			{
+				indices[count++] = i * (altitudeSegmentNum - 1) + j;
+				indices[count++] = iNext * (altitudeSegmentNum - 1) + j;
+				indices[count++] = iNext * (altitudeSegmentNum - 1) + j + 1;
+
+				indices[count++] = i * (altitudeSegmentNum - 1) + j;
+				indices[count++] = iNext * (altitudeSegmentNum - 1) + j + 1;
+				indices[count++] = i * (altitudeSegmentNum - 1) + j + 1;
+			}
+
+			//upper triangle
+			indices[count++] = i * (altitudeSegmentNum - 1);
+			indices[count++] = vertexNum - 2;
+			indices[count++] = iNext * (altitudeSegmentNum - 1);
+
+			//lower triangle
+			indices[count++] = i * (altitudeSegmentNum - 1) + altitudeSegmentNum - 2;
+			indices[count++] = iNext * (altitudeSegmentNum - 1) + altitudeSegmentNum - 2;
+			indices[count++] = vertexNum - 1;
 		}
 
-		//upper triangle
-		indices[count++] = i * (altitudeSegmentNum - 1);
-		indices[count++] = vertexNum - 2;
-		indices[count++] = iNext * (altitudeSegmentNum - 1);
-
-		//lower triangle
-		indices[count++] = i * (altitudeSegmentNum - 1) + altitudeSegmentNum - 2;
-		indices[count++] = iNext * (altitudeSegmentNum - 1) + altitudeSegmentNum - 2;
-		indices[count++] = vertexNum - 1;
+		initiated = true;
 	}
-
-	initiated = true;
-	return initiated;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -191,9 +198,12 @@ ObjMesh::~ObjMesh()
 //adjacent triangles do not share vertices(vertices are unique)
 bool ObjMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
-	initiated = LoadObjMesh(fileName);
+	if (!initiated)
+	{
+		DestroyMesh();
+		initiated = false;
+		initiated = LoadObjMesh(fileName);
+	}
 	return initiated;
 }
 
@@ -381,41 +391,44 @@ GridMesh::~GridMesh()
 
 bool GridMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
-
-	vertexNum = 4 * segmentNum;
-	indexNum = vertexNum + 4;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
-
-	//segmentNum + 1 lines along z axis
-	uint32_t count = 0;
-	for (uint32_t i = 0; i < segmentNum + 1; i++)
+	if (!initiated)
 	{
-		vertices[i * 2] = Vertex(-(int)segmentNum / 2 + (int)i, 0, -(int)segmentNum / 2, 1, 1, 1, 1);
-		vertices[i * 2 + 1] = Vertex(-(int)segmentNum / 2 + (int)i, 0, (int)segmentNum / 2, 1, 1, 1, 1);
-		indices[i * 2] = i * 2;
-		indices[i * 2 + 1] = i * 2 + 1;
-		count += 2;
+		DestroyMesh();
+		initiated = false;
+
+		vertexNum = 4 * segmentNum;
+		indexNum = vertexNum + 4;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
+
+		//segmentNum + 1 lines along z axis
+		uint32_t count = 0;
+		for (uint32_t i = 0; i < segmentNum + 1; i++)
+		{
+			vertices[i * 2] = Vertex(-(int)segmentNum / 2 + (int)i, 0, -(int)segmentNum / 2, 1, 1, 1, 1);
+			vertices[i * 2 + 1] = Vertex(-(int)segmentNum / 2 + (int)i, 0, (int)segmentNum / 2, 1, 1, 1, 1);
+			indices[i * 2] = i * 2;
+			indices[i * 2 + 1] = i * 2 + 1;
+			count += 2;
+		}
+
+		//segmentNum - 1 lines along x axis
+		for (uint32_t i = 0; i < segmentNum - 1; i++)
+		{
+			vertices[count + i * 2] = Vertex(-(int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
+			vertices[count + i * 2 + 1] = Vertex((int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
+			indices[count + i * 2] = count + i * 2;
+			indices[count + i * 2 + 1] = count + i * 2 + 1;
+		}
+
+		indices[indexNum - 4] = 0;
+		indices[indexNum - 3] = 2 * segmentNum;
+		indices[indexNum - 2] = 1;
+		indices[indexNum - 1] = 1 + 2 * segmentNum;
+
+		initiated = true;
 	}
-
-	//segmentNum - 1 lines along x axis
-	for (uint32_t i = 0; i < segmentNum - 1; i++)
-	{
-		vertices[count + i * 2] = Vertex(-(int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
-		vertices[count + i * 2 + 1] = Vertex((int)segmentNum / 2, 0, -((int)segmentNum / 2 - 1) + (int)i, 1, 1, 1, 1);
-		indices[count + i * 2] = count + i * 2;
-		indices[count + i * 2 + 1] = count + i * 2 + 1;
-	}
-
-	indices[indexNum-4] = 0;
-	indices[indexNum-3] = 2 * segmentNum;
-	indices[indexNum-2] = 1;
-	indices[indexNum-1] = 1 + 2 * segmentNum;
-
-	initiated = true;
-	return initiated;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -430,30 +443,33 @@ AxisMesh::~AxisMesh()
 
 bool AxisMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
+	if (!initiated)
+	{
+		DestroyMesh();
+		initiated = false;
 
-	vertexNum = 6;
-	indexNum = 6;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
+		vertexNum = 6;
+		indexNum = 6;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
 
-	vertices[0] = Vertex(0, 0, 0, 1, 0, 0, 1);
-	vertices[1] = Vertex(1, 0, 0, 1, 0, 0, 1);
-	vertices[2] = Vertex(0, 0, 0, 0, 1, 0, 1);
-	vertices[3] = Vertex(0, 1, 0, 0, 1, 0, 1);
-	vertices[4] = Vertex(0, 0, 0, 0, 0, 1, 1);
-	vertices[5] = Vertex(0, 0, 1, 0, 0, 1, 1);
+		vertices[0] = Vertex(0, 0, 0, 1, 0, 0, 1);
+		vertices[1] = Vertex(1, 0, 0, 1, 0, 0, 1);
+		vertices[2] = Vertex(0, 0, 0, 0, 1, 0, 1);
+		vertices[3] = Vertex(0, 1, 0, 0, 1, 0, 1);
+		vertices[4] = Vertex(0, 0, 0, 0, 0, 1, 1);
+		vertices[5] = Vertex(0, 0, 1, 0, 0, 1, 1);
 
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-	indices[3] = 3;
-	indices[4] = 4;
-	indices[5] = 5;
+		indices[0] = 0;
+		indices[1] = 1;
+		indices[2] = 2;
+		indices[3] = 3;
+		indices[4] = 4;
+		indices[5] = 5;
 
-	initiated = true;
-	return initiated;
+		initiated = true;
+	}
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -469,72 +485,75 @@ CubeMesh::~CubeMesh()
 //each square face of the cube has 2 shared vertices
 bool CubeMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
-
-	vertexNum = 24;
-	indexNum = 36;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
-
-	XMFLOAT3 nor[6] = { XMFLOAT3(0,0,-1),
-						 XMFLOAT3(1,0,0),
-						 XMFLOAT3(0,0,1),
-						 XMFLOAT3(-1,0,0),
-						 XMFLOAT3(0,-1,0),
-						 XMFLOAT3(0,1,0) };
-
-	XMFLOAT3 pos[8] = { XMFLOAT3(-0.5,-0.5,-0.5),
-						XMFLOAT3(0.5,-0.5,-0.5),
-						XMFLOAT3(0.5,-0.5,0.5),
-						XMFLOAT3(-0.5,-0.5,0.5),
-						XMFLOAT3(-0.5,0.5,-0.5),
-						XMFLOAT3(-0.5,0.5,0.5),
-						XMFLOAT3(0.5,0.5,0.5),
-						XMFLOAT3(0.5,0.5,-0.5) };
-
-	XMFLOAT4 col[8] = { XMFLOAT4(0.9,0.5,0.1,1),
-						XMFLOAT4(0.9,0.1,0.5,1),
-						XMFLOAT4(0.5,0.9,0.1,1),
-						XMFLOAT4(0.5,0.1,0.9,1),
-						XMFLOAT4(0.1,0.9,0.5,1),
-						XMFLOAT4(0.1,0.5,0.9,1),
-						XMFLOAT4(0.9,0.9,0.5,1),
-						XMFLOAT4(0.9,0.5,0.5,1) };
-
-	XMFLOAT2 uv[4] = { XMFLOAT2(0.0, 0.0),
-					   XMFLOAT2(0.0, 1.0),
-					   XMFLOAT2(1.0, 1.0),
-					   XMFLOAT2(1.0, 0.0) };
-
-	for (int i = 0; i < 4; i++)
+	if (!initiated)
 	{
-		vertices[i * 4 + 0] = Vertex(pos[0 + i], nor[i], uv[0], col[0 + i]);
-		vertices[i * 4 + 1] = Vertex(pos[(4 - i) % 4 + 4], nor[i], uv[1], col[(4 - i) % 4 + 4]);
-		vertices[i * 4 + 2] = Vertex(pos[7 - i], nor[i], uv[2], col[7 - i]);
-		vertices[i * 4 + 3] = Vertex(pos[(1 + i) % 4], nor[i], uv[3], col[(1 + i) % 4]);
+		DestroyMesh();
+		initiated = false;
+
+		vertexNum = 24;
+		indexNum = 36;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
+
+		XMFLOAT3 nor[6] = { XMFLOAT3(0,0,-1),
+							 XMFLOAT3(1,0,0),
+							 XMFLOAT3(0,0,1),
+							 XMFLOAT3(-1,0,0),
+							 XMFLOAT3(0,-1,0),
+							 XMFLOAT3(0,1,0) };
+
+		XMFLOAT3 pos[8] = { XMFLOAT3(-0.5,-0.5,-0.5),
+							XMFLOAT3(0.5,-0.5,-0.5),
+							XMFLOAT3(0.5,-0.5,0.5),
+							XMFLOAT3(-0.5,-0.5,0.5),
+							XMFLOAT3(-0.5,0.5,-0.5),
+							XMFLOAT3(-0.5,0.5,0.5),
+							XMFLOAT3(0.5,0.5,0.5),
+							XMFLOAT3(0.5,0.5,-0.5) };
+
+		XMFLOAT4 col[8] = { XMFLOAT4(0.9,0.5,0.1,1),
+							XMFLOAT4(0.9,0.1,0.5,1),
+							XMFLOAT4(0.5,0.9,0.1,1),
+							XMFLOAT4(0.5,0.1,0.9,1),
+							XMFLOAT4(0.1,0.9,0.5,1),
+							XMFLOAT4(0.1,0.5,0.9,1),
+							XMFLOAT4(0.9,0.9,0.5,1),
+							XMFLOAT4(0.9,0.5,0.5,1) };
+
+		XMFLOAT2 uv[4] = { XMFLOAT2(0.0, 0.0),
+						   XMFLOAT2(0.0, 1.0),
+						   XMFLOAT2(1.0, 1.0),
+						   XMFLOAT2(1.0, 0.0) };
+
+		for (int i = 0; i < 4; i++)
+		{
+			vertices[i * 4 + 0] = Vertex(pos[0 + i], nor[i], uv[0], col[0 + i]);
+			vertices[i * 4 + 1] = Vertex(pos[(4 - i) % 4 + 4], nor[i], uv[1], col[(4 - i) % 4 + 4]);
+			vertices[i * 4 + 2] = Vertex(pos[7 - i], nor[i], uv[2], col[7 - i]);
+			vertices[i * 4 + 3] = Vertex(pos[(1 + i) % 4], nor[i], uv[3], col[(1 + i) % 4]);
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			vertices[16 + i] = Vertex(pos[i], nor[4], uv[i], col[i]);
+			vertices[20 + i] = Vertex(pos[i + 4], nor[5], uv[i], col[i + 4]);
+		}
+
+		for (int i = 0; i < indexNum; i += 3)
+		{
+			int ver = i % 3;
+			int tri = i / 3;
+			int tri_half = tri % 2;
+			int face = tri / 2;
+
+			indices[i] = face * 4 + (0 + tri_half * 2 + ver) % 4;
+			indices[i + 1] = face * 4 + (1 + tri_half * 2 + ver) % 4;
+			indices[i + 2] = face * 4 + (2 + tri_half * 2 + ver) % 4;
+		}
+
+		initiated = true;
 	}
-
-	for (int i = 0; i < 4; i++)
-	{
-		vertices[16 + i] = Vertex(pos[i], nor[4], uv[i], col[i]);
-		vertices[20 + i] = Vertex(pos[i + 4], nor[5], uv[i], col[i + 4]);
-	}
-
-	for (int i = 0; i < indexNum; i += 3)
-	{
-		int ver = i % 3;
-		int tri = i / 3;
-		int tri_half = tri % 2;
-		int face = tri / 2;
-
-		indices[i] = face * 4 + (0 + tri_half * 2 + ver) % 4;
-		indices[i + 1] = face * 4 + (1 + tri_half * 2 + ver) % 4;
-		indices[i + 2] = face * 4 + (2 + tri_half * 2 + ver) % 4;
-	}
-
-	initiated = true;
-	return initiated;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -549,28 +568,31 @@ PlaneMesh::~PlaneMesh()
 
 bool PlaneMesh::InitMesh()
 {
-	DestroyMesh();
-	initiated = false;
+	if (!initiated)
+	{
+		DestroyMesh();
+		initiated = false;
 
-	vertexNum = 4;
-	indexNum = 6;
-	vertices = new Vertex[vertexNum];
-	indices = new Index[indexNum];
+		vertexNum = 4;
+		indexNum = 6;
+		vertices = new Vertex[vertexNum];
+		indices = new Index[indexNum];
 
-	XMFLOAT3 nor(0, 1, 0);
+		XMFLOAT3 nor(0, 1, 0);//facing up
 
-	vertices[0] = Vertex(XMFLOAT3(-0.5, 0, -0.5), nor, XMFLOAT2(0, 0));
-	vertices[1] = Vertex(XMFLOAT3(-0.5, 0, 0.5), nor, XMFLOAT2(0, 1));
-	vertices[2] = Vertex(XMFLOAT3(0.5, 0, 0.5), nor, XMFLOAT2(1, 1));
-	vertices[3] = Vertex(XMFLOAT3(0.5, 0, -0.5), nor, XMFLOAT2(1, 0));
+		vertices[0] = Vertex(XMFLOAT3(-0.5, 0, -0.5), nor, XMFLOAT2(0, 0));
+		vertices[1] = Vertex(XMFLOAT3(-0.5, 0, 0.5), nor, XMFLOAT2(0, 1));
+		vertices[2] = Vertex(XMFLOAT3(0.5, 0, 0.5), nor, XMFLOAT2(1, 1));
+		vertices[3] = Vertex(XMFLOAT3(0.5, 0, -0.5), nor, XMFLOAT2(1, 0));
 
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-	indices[3] = 2;
-	indices[4] = 3;
-	indices[5] = 0;
+		indices[0] = 0;
+		indices[1] = 1;
+		indices[2] = 2;
+		indices[3] = 2;
+		indices[4] = 3;
+		indices[5] = 0;
 
-	initiated = true;
-	return initiated;
+		initiated = true;
+	}
+	return true;
 }

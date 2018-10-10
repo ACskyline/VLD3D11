@@ -8,10 +8,12 @@ class ObjectUniform
 	{
 		XMFLOAT4X4 M;
 		XMFLOAT4X4 M_INV;
+		XMFLOAT4X4 M_INV_TRANS;
 		XMFLOAT4 COL;
 		ObjectUniformData() :
 			M(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			M_INV(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+			M_INV_TRANS(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			COL(XMFLOAT4(1, 1, 1, 1))
 		{}
 	};
@@ -36,5 +38,7 @@ private:
 	ID3D11Buffer* objectUniformBuffer;	
 	void SetM(Transform* pTransform);
 	void SetM_INV(Transform* pTransform);
+	void SetM_INV_TRANS(Transform* pTransform);
+	bool initiated;
 };
 

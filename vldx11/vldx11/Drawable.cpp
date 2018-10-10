@@ -85,6 +85,33 @@ void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon)
 	d3d11DevCon->DrawIndexed(pMesh->indexNum, 0, 0);
 }
 
+void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat)
+{
+	//set shader first
+	_pMat->SetShader(d3d11DevCon);
+
+	if (pSceneUniform != nullptr) pSceneUniform->SetSceneUniformBufferVSPS(d3d11DevCon);
+	if (pFrameUniform != nullptr) pFrameUniform->SetFrameUniformBufferVSPS(d3d11DevCon);
+	if (pObjectUniform != nullptr) pObjectUniform->SetObjectUniformBufferVSPS(d3d11DevCon);
+
+	SetVertexIndexBuffer(d3d11DevCon);
+
+	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	{
+		if (_pMat->HasTexture(i))
+		{
+			_pMat->UseTexture(i, d3d11DevCon);
+		}
+	}
+
+	if (type == DrawableType::TrianlgeList)
+		UseTriangleList(d3d11DevCon);
+	else if (type == DrawableType::LineList)
+		UseLineList(d3d11DevCon);
+
+	d3d11DevCon->DrawIndexed(pMesh->indexNum, 0, 0);
+}
+
 void Drawable::UseTriangleList(ID3D11DeviceContext* d3d11DevCon)
 {
 	pMat->SetLayoutTriangleList(d3d11DevCon);
@@ -98,18 +125,15 @@ void Drawable::UseLineList(ID3D11DeviceContext* d3d11DevCon)
 
 bool Drawable::InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!pMesh->IsInitiated())
+	if (!initiated)
 	{
 		if (!pMesh->InitMesh()) return false;
-	}
-	if (!pMat->IsInitiated())
-	{
 		if (!pMat->InitMaterial(d3d11Device)) return false;
+		if (!CreateBuffer(d3d11Device)) return false;
+		VertexIndexBufferData(d3d11DevCon);
+		printf("drawble create buffer done!\n");
+		initiated = true;
 	}
-	if (!CreateBuffer(d3d11Device)) return false;
-	VertexIndexBufferData(d3d11DevCon);
-	printf("drawble create buffer done!\n");
-	initiated = true;
 	return true;
 }
 
