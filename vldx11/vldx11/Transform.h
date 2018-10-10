@@ -11,5 +11,7 @@ public:
 	XMFLOAT3 position;
 	XMFLOAT3 rotation;//in degrees
 	XMFLOAT3 scale;
+
+	XMMATRIX GetTransform();//S * R * T
 };
 

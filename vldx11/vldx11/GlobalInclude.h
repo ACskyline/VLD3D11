@@ -32,6 +32,8 @@
 #define MAIN_TEXTURE_SLOT 1
 #define MAX_TEXTURE_SLOT 2
 
+#define KEYDOWN(name, key) ((name)[(key)] & 0x80)
+
 using namespace DirectX;
 using namespace std;
 

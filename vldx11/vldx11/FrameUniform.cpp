@@ -14,24 +14,19 @@ FrameUniform::~FrameUniform()
 
 bool FrameUniform::CreateBuffer(ID3D11Device* d3d11Device)
 {
-	if (!initiated)
-	{
-		HRESULT hr;
+	HRESULT hr;
 
-		//PerFrame Constant Buffer Start
-		D3D11_BUFFER_DESC frameBufferDesc;
-		ZeroMemory(&frameBufferDesc, sizeof(D3D11_BUFFER_DESC));
-		frameBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		frameBufferDesc.ByteWidth = sizeof(FrameUniformData);
-		frameBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		frameBufferDesc.CPUAccessFlags = 0;
-		frameBufferDesc.MiscFlags = 0;
-		hr = d3d11Device->CreateBuffer(&frameBufferDesc, NULL, &frameUniformBuffer);
-		if (!CheckError(hr, nullptr)) return false;
-		//PerFrame Constant Buffer Finish
-		initiated = true;
-	}
-	return true;
+	//PerFrame Constant Buffer Start
+	D3D11_BUFFER_DESC frameBufferDesc;
+	ZeroMemory(&frameBufferDesc, sizeof(D3D11_BUFFER_DESC));
+	frameBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	frameBufferDesc.ByteWidth = sizeof(FrameUniformData);
+	frameBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	frameBufferDesc.CPUAccessFlags = 0;
+	frameBufferDesc.MiscFlags = 0;
+	hr = d3d11Device->CreateBuffer(&frameBufferDesc, NULL, &frameUniformBuffer);
+	if (!CheckError(hr, nullptr)) return false;
+	//PerFrame Constant Buffer Finish
 }
 
 void FrameUniform::FrameUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
@@ -56,61 +51,75 @@ void FrameUniform::SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetFrameUniformBufferPS(d3d11DevCon);
 }
 
-void FrameUniform::SetVP(Camera* pCamera)
+void FrameUniform::SetVP(Camera* pCamera, const XMMATRIX& transform)
 {
-	XMMATRIX tempV = XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-		XMLoadFloat3(&pCamera->target),
-		XMLoadFloat3(&pCamera->up));
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
+	//	XMLoadFloat3(&pCamera->target),
+	//	XMLoadFloat3(&pCamera->up));
 
-	XMMATRIX tempP = XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-		pCamera->aspect,
-		pCamera->nearClipPlane,
-		pCamera->farClipPlane);
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
+	//	pCamera->aspect,
+	//	pCamera->nearClipPlane,
+	//	pCamera->farClipPlane);
 
-	XMMATRIX temp = tempV * tempP;
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.VP, temp);
 }
 
-void FrameUniform::SetVP_INV(Camera* pCamera)
+void FrameUniform::SetVP_INV(Camera* pCamera, const XMMATRIX& transform)
 {
-	XMMATRIX tempV = XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-		XMLoadFloat3(&pCamera->target),
-		XMLoadFloat3(&pCamera->up));
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
+	//	XMLoadFloat3(&pCamera->target),
+	//	XMLoadFloat3(&pCamera->up));
 
-	XMMATRIX tempP = XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-			pCamera->aspect,
-			pCamera->nearClipPlane,
-			pCamera->farClipPlane);
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
+	//	pCamera->aspect,
+	//	pCamera->nearClipPlane,
+	//	pCamera->farClipPlane);
 
-	XMMATRIX temp = tempV * tempP;
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.VP, temp);
 	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
 }
 
-void FrameUniform::SetP_VP_INV(Camera* pCamera)
+void FrameUniform::SetP_VP_INV(Camera* pCamera, const XMMATRIX& transform)
 {
-	XMMATRIX tempV = XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-		XMLoadFloat3(&pCamera->target),
-		XMLoadFloat3(&pCamera->up));
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
+	//	XMLoadFloat3(&pCamera->target),
+	//	XMLoadFloat3(&pCamera->up));
 
-	XMMATRIX tempP = XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-		pCamera->aspect,
-		pCamera->nearClipPlane,
-		pCamera->farClipPlane);
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
+	//	pCamera->aspect,
+	//	pCamera->nearClipPlane,
+	//	pCamera->farClipPlane);
 
-	XMMATRIX temp = tempV * tempP;
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.P, tempP);
 	XMStoreFloat4x4(&frameUniformData.VP, temp);
 	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
 }
 
-void FrameUniform::ApplyCamera(Camera* pCamera)
+void FrameUniform::ApplyCamera(Camera* pCamera, Transform* pTransform)
 {
-	frameUniformData.cameraPos = pCamera->position;
-	SetP_VP_INV(pCamera);
+	XMMATRIX m(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	if (pTransform != nullptr) m = pTransform->GetTransform();
+
+	//camera position
+	XMFLOAT4 cameraPosVec4(pCamera->position.x, pCamera->position.y, pCamera->position.z, 1);//w is 1
+	XMStoreFloat3(&frameUniformData.cameraPos, XMVector4Transform(XMLoadFloat4(&cameraPosVec4), m));
+
+	//view matrix and projection matrix
+	SetP_VP_INV(pCamera, m);
+
 	needToUpload = true;
 }
 
@@ -134,10 +143,14 @@ void FrameUniform::ApplyFrameNum(uint32_t frameNum)
 
 bool FrameUniform::InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!CreateBuffer(d3d11Device)) return false;
-	FrameUniformBufferData(d3d11DevCon);
-	SetFrameUniformBufferVSPS(d3d11DevCon);
-	printf("frameUniform create buffer done!\n");
+	if (!initiated)
+	{
+		if (!CreateBuffer(d3d11Device)) return false;
+		FrameUniformBufferData(d3d11DevCon);
+		SetFrameUniformBufferVSPS(d3d11DevCon);
+		printf("frameUniform create buffer done!\n");
+		initiated = true;
+	}
 	return true;
 }
 

@@ -24,15 +24,15 @@ bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11Dev
 		}
 		if (pCamera != nullptr&&pFrameUniform != nullptr)
 		{
-			pFrameUniform->ApplyCamera(pCamera);
+			pFrameUniform->ApplyCamera(pCamera, pTransform);
 		}
 		if (pLight != nullptr&&pSceneUniform != nullptr)
 		{
-			pSceneUniform->ApplyLight(pLight);
+			pSceneUniform->ApplyLight(pLight, pTransform);
 		}
 		if (pCamera != nullptr&&pSceneUniform != nullptr)
 		{
-			pSceneUniform->ApplyCamera(pCamera);
+			pSceneUniform->ApplyCamera(pCamera, pTransform);
 		}
 		if (pDrawable != nullptr)
 		{
@@ -57,13 +57,13 @@ void Object::UpdateObject(ID3D11DeviceContext *d3d11DevCon)
 	if (pFrameUniform != nullptr && pCamera!=nullptr)
 	{
 		//wait and upload in UpdateScene()
-		pFrameUniform->ApplyCamera(pCamera);
+		pFrameUniform->ApplyCamera(pCamera, pTransform);
 	}
 	if (pSceneUniform != nullptr && (pCamera != nullptr || pLight != nullptr))
 	{
 		//wait and upload in UpdateScene()
-		if(pCamera != nullptr) pSceneUniform->ApplyCamera(pCamera);
-		if(pLight != nullptr) pSceneUniform->ApplyLight(pLight);
+		if(pCamera != nullptr) pSceneUniform->ApplyCamera(pCamera, pTransform);
+		if(pLight != nullptr) pSceneUniform->ApplyLight(pLight, pTransform);
 	}
 }
 

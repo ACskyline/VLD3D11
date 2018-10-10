@@ -11,6 +11,7 @@ public:
 	bool InitRenderer(HWND hwnd);
 	void DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec);
 	void DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material* _pMat);
+	void DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material* _pMat, FrameUniform* _pFrameUniform);
 	void SetDefaultRenderTarget();
 	void SetRenderTarget(RenderTexture* renderTexture);
 	void ClearCurrentRenderTargetDefault();

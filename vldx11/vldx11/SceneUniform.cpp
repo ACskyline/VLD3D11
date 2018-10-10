@@ -53,16 +53,31 @@ void SceneUniform::SetSceneUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetSceneUniformBufferPS(d3d11DevCon);
 }
 
-void SceneUniform::ApplyLight(Light* pLight)
+void SceneUniform::ApplyLight(Light* pLight, Transform* pTransform)
 {
+	XMMATRIX m(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	if (pTransform != nullptr) m = pTransform->GetTransform();
+
+	//light color
 	sceneUniformData.lightCol = pLight->GetCol();
-	sceneUniformData.lightPos = pLight->GetPos();
-	sceneUniformData.lightDir = pLight->GetDir();
+
+	//light position
+	XMFLOAT3 lightPosVec3 = pLight->GetPos();
+	XMFLOAT4 lightPosVec4(lightPosVec3.x, lightPosVec3.y, lightPosVec3.z, 1);//w is 1
+	XMStoreFloat3(&sceneUniformData.lightPos, XMVector4Transform(XMLoadFloat4(&lightPosVec4), m));
+	
+	//light direction
+	XMFLOAT3 lightDirVec3 = pLight->GetDir();
+	XMFLOAT4 lightDirVec4(lightDirVec3.x, lightDirVec3.y, lightDirVec3.z, 0);//w is 0
+	XMStoreFloat3(&sceneUniformData.lightDir, XMVector4Transform(XMLoadFloat4(&lightDirVec4), m));//normalize in shader
+
+	//light radius
 	sceneUniformData.lightRadius = pLight->GetRadius();
+
 	needToUpload = true;
 }
 
-void SceneUniform::ApplyCamera(Camera* pCamera)
+void SceneUniform::ApplyCamera(Camera* pCamera, Transform* pTransform)
 {
 	sceneUniformData.farClip = pCamera->farClipPlane;
 	needToUpload = true;

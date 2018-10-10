@@ -55,16 +55,14 @@ void ObjectUniform::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 
 void ObjectUniform::SetM(Transform* pTransform)
 {
-	XMStoreFloat4x4(&objectUniformData.M, XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z) *
-					   XMMatrixRotationRollPitchYaw(pTransform->rotation.x, pTransform->rotation.y, pTransform->rotation.z) *
-					   XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z));
+	XMMATRIX temp = pTransform->GetTransform();
+
+	XMStoreFloat4x4(&objectUniformData.M, temp);
 }
 
 void ObjectUniform::SetM_INV(Transform* pTransform)
 {
-	XMMATRIX temp = XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z) *
-					XMMatrixRotationRollPitchYaw(pTransform->rotation.x, pTransform->rotation.y, pTransform->rotation.z) *
-					XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z);
+	XMMATRIX temp = pTransform->GetTransform();
 
 	XMStoreFloat4x4(&objectUniformData.M, temp);
 	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));
@@ -72,10 +70,7 @@ void ObjectUniform::SetM_INV(Transform* pTransform)
 
 void ObjectUniform::SetM_INV_TRANS(Transform* pTransform)
 {
-	XMMATRIX tempS = XMMatrixScaling(pTransform->scale.x, pTransform->scale.y, pTransform->scale.z);
-	XMMATRIX tempR = XMMatrixRotationRollPitchYaw(XMConvertToRadians(pTransform->rotation.x), XMConvertToRadians(pTransform->rotation.y), XMConvertToRadians(pTransform->rotation.z));
-	XMMATRIX tempT = XMMatrixTranslation(pTransform->position.x, pTransform->position.y, pTransform->position.z);
-	XMMATRIX temp = tempS * tempR * tempT;
+	XMMATRIX temp = pTransform->GetTransform();
 
 	XMStoreFloat4x4(&objectUniformData.M, temp);
 	XMStoreFloat4x4(&objectUniformData.M_INV, XMMatrixInverse(nullptr, temp));

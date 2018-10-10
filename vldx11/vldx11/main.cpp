@@ -15,6 +15,7 @@ HWND hwnd = NULL;
 IDirectInputDevice8* DIKeyboard;
 IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
+BYTE keyboardLastState[256];
 LPDIRECTINPUT8 DirectInput;
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -24,7 +25,7 @@ CubeMesh mMeshVolume;
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
 PlaneMesh mMeshDebugShadowMap;
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelTexturePointLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelTextureDirectionalLight.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialDebugShadowMap(L"myVertUI.hlsl", L"myPixelDebugShadowMap.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialShadowPass(L"myVert.hlsl", L"myPixelShadowPass.hlsl", layout, ARRAYSIZE(layout));
@@ -36,8 +37,9 @@ Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10
 Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformDebugShadowMap(XMFLOAT3(-0.75f, 0.75f, 0.1f), XMFLOAT3(-90, 0, 0), XMFLOAT3(0.5, 1, 0.5));
-OrbitCamera mCamera(10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 1.f, 50.f);
-PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
+OrbitCamera mCamera(Camera::CameraType::Perspective, 10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 1.f, 50.f, 0, 0);
+//PointLight mLightPoint(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
+DirectionalLight mLightDirectional(XMFLOAT3(0, 0, 1), XMFLOAT4(1, 1, 1, 1));
 Texture mTex(Texture::TextureType::Default, L"checkerboard.jpg");
 RenderTexture mRTex(RenderTexture::RenderTextureType::ShadowMap, 800, 600);
 ObjectUniform mObjUniVolume;
@@ -49,7 +51,6 @@ SceneUniform mSceneUniform;
 Object objVolume;
 Object objLight;
 Object objCamera;
-Object objAxis;
 Object objGrid;
 Object objDebugShadowMap;
 DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
@@ -207,9 +208,6 @@ bool InitScene()
 	objVolume.SetTransform(&mTransformVolume);
 	objVolume.SetDrawable(&mDrawableVolume);
 	objVolume.ConnectObjectUniform(&mObjUniVolume);
-	objAxis.SetTransform(&mTransformAxis);
-	objAxis.SetDrawable(&mDrawableAxis);
-	objAxis.ConnectObjectUniform(&mObjUniAxis);
 	objGrid.SetTransform(&mTransformGrid);
 	objGrid.SetDrawable(&mDrawableGrid);
 	objGrid.ConnectObjectUniform(&mObjUniGrid);
@@ -218,14 +216,16 @@ bool InitScene()
 	objDebugShadowMap.ConnectObjectUniform(&mObjUniDebugShadowMap);
 	objCamera.SetCamera(&mCamera);
 	objCamera.ConnectFrameUniform(&mFrameUniform);
-	objLight.SetLight(&mLight);
+	objLight.SetLight(&mLightDirectional); //(&mLightPoint); //
 	objLight.ConnectSceneUniform(&mSceneUniform);
+	objLight.SetTransform(&mTransformAxis);
+	objLight.SetDrawable(&mDrawableAxis);
+	objLight.ConnectObjectUniform(&mObjUniAxis);
 
 	//init object vectors
 	///////////////////////////////////////////////////////////////////
 	GlobalObjVec.push_back(&objVolume);
 	GlobalObjVec.push_back(&objGrid);
-	GlobalObjVec.push_back(&objAxis);
 	GlobalObjVec.push_back(&objDebugShadowMap);
 	GlobalObjVec.push_back(&objCamera);
 	GlobalObjVec.push_back(&objLight);
@@ -289,10 +289,11 @@ bool InitScene()
 void DrawScene()
 {
 	//Crucial
-	//first pass
+	//shadow pass
 	mRenderer.SetRenderTarget(&mRTex);
 	mRenderer.ClearCurrentRenderTarget({1.f}, 1.f, 0);//since I know this render target is DXGI_FORMAT_R16_FLOAT, I can supply only the red channel
 	mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass);
+	//mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass, XXX);
 	//second pass
 	mRenderer.SetDefaultRenderTarget();
 	mRenderer.ClearCurrentRenderTargetDefault();
@@ -304,88 +305,70 @@ void DrawScene()
 void DetectInput()
 {
 	DIMOUSESTATE mouseCurrState;
-	BYTE keyboardState[256];
+	BYTE keyboardCurrState[256];
 
 	DIKeyboard->Acquire();
 	DIMouse->Acquire();
 
 	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
-	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
+	DIKeyboard->GetDeviceState(sizeof(keyboardCurrState), (LPVOID)&keyboardCurrState);
 
 	//keyboard control
-	if (keyboardState[DIK_ESCAPE] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_ESCAPE))
 	{
 		PostMessage(hwnd, WM_DESTROY, 0, 0);
 	}
-	if (keyboardState[DIK_W] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_W))
 	{
 		mTransformVolume.position.y += 0.001;
 	}
-	if (keyboardState[DIK_S] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_S))
 	{
 		mTransformVolume.position.y -= 0.001;
 	}
-	if (keyboardState[DIK_A] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_A))
 	{
 		mTransformVolume.position.x -= 0.001;
 	}
-	if (keyboardState[DIK_D] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_D))
 	{
 		mTransformVolume.position.x += 0.001;
 	}
-	if (keyboardState[DIK_Q] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_Q))
 	{
 		mTransformVolume.position.z -= 0.0005;
 	}
-	if (keyboardState[DIK_E] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_E))
 	{
 		mTransformVolume.position.z += 0.0005;
 	}
-	if (keyboardState[DIK_UP] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_UP))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos(); 
-		lightPosTemp.y += 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.y += 0.005;
 	}
-	if (keyboardState[DIK_DOWN] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_DOWN))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos();
-		lightPosTemp.y -= 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.y -= 0.005;
 	}
-	if (keyboardState[DIK_LEFT] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_LEFT))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos();
-		lightPosTemp.x -= 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.x -= 0.005;
 	}
-	if (keyboardState[DIK_RIGHT] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_RIGHT))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos();
-		lightPosTemp.x += 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.x += 0.005;
 	}
-	if (keyboardState[DIK_COMMA] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_COMMA))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos();
-		lightPosTemp.z -= 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.z -= 0.005;
 	}
-	if (keyboardState[DIK_PERIOD] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_PERIOD))
 	{
-		XMFLOAT3 lightPosTemp = mLight.GetPos();
-		lightPosTemp.z += 0.005;
-		mLight.SetPos(lightPosTemp);
-		mTransformAxis.position = lightPosTemp;
+		mTransformAxis.position.z += 0.005;
 	}
 
 	//mouse control
-	if (keyboardState[DIK_LCONTROL] & 0x80)
+	if (KEYDOWN(keyboardCurrState, DIK_Z))//control volume
 	{
 		if (mouseCurrState.lX != 0)
 		{
@@ -401,7 +384,23 @@ void DetectInput()
 			mTransformVolume.rotation.z += 0.1;
 		}
 	}
-	else
+	else if (KEYDOWN(keyboardCurrState, DIK_X))//control light
+	{
+		if (mouseCurrState.lX != 0)
+		{
+			mTransformAxis.rotation.y += mouseCurrState.lX * 0.1;
+		}
+		if (mouseCurrState.lY != 0)
+		{
+			mTransformAxis.rotation.x += mouseCurrState.lY * 0.1;
+
+		}
+		if (mouseCurrState.rgbButtons[0] > 0)//MLB
+		{
+			mTransformAxis.rotation.z += 0.1;
+		}
+	}
+	else//control camera
 	{
 		if (mouseCurrState.lX != 0)
 		{
@@ -422,6 +421,7 @@ void DetectInput()
 	}
 
 	mouseLastState = mouseCurrState;
+	memcpy(keyboardLastState, keyboardCurrState, 256 * sizeof(BYTE));
 
 	return;
 }

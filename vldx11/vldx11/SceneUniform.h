@@ -2,6 +2,7 @@
 #include "GlobalInclude.h"
 #include "Light.h"
 #include "Camera.h"
+#include "Transform.h"
 
 class SceneUniform
 {
@@ -35,8 +36,8 @@ public:
 	void SetSceneUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
 	void SetSceneUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetSceneUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void ApplyLight(Light* pLight);
-	void ApplyCamera(Camera* pCamera);
+	void ApplyLight(Light* pLight, Transform* pTransform = nullptr);
+	void ApplyCamera(Camera* pCamera, Transform* pTransform = nullptr);
 	void ApplyStep(uint32_t step);
 	bool InitSceneUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
 	bool NeedToUpload();

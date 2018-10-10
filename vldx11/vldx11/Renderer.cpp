@@ -169,6 +169,15 @@ void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material
 	}
 }
 
+void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material* _pMat, FrameUniform* _pFrameUniform)
+{
+	//Draw Call
+	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
+	{
+		(*item)->Draw(d3d11DevCon, _pMat, _pFrameUniform);
+	}
+}
+
 void Renderer::ClearCurrentRenderTargetDefault()
 {
 	//Clear our backbuffer to the updated color

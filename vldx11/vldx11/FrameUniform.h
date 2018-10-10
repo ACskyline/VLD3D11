@@ -1,6 +1,7 @@
 #pragma once
 #include "GlobalInclude.h"
 #include "Camera.h"
+#include "Transform.h"
 
 class FrameUniform
 {
@@ -36,7 +37,7 @@ public:
 	void SetFrameUniformBufferVS(ID3D11DeviceContext* d3d11DevCon);
 	void SetFrameUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
-	void ApplyCamera(Camera* pCamera);
+	void ApplyCamera(Camera* pCamera, Transform* pTransform = nullptr);
 	void ApplyCol(float r, float g, float b, float a);
 	void ApplyIntensity(float intensity);
 	void ApplyFrameNum(uint32_t frameNum);
@@ -47,9 +48,9 @@ private:
 	bool needToUpload;
 	FrameUniformData frameUniformData;
 	ID3D11Buffer * frameUniformBuffer;
-	void SetVP(Camera* pCamera);
-	void SetVP_INV(Camera* pCamera);
-	void SetP_VP_INV(Camera* pCamera);
+	void SetVP(Camera* pCamera, const XMMATRIX& transform);
+	void SetVP_INV(Camera* pCamera, const XMMATRIX& transform);
+	void SetP_VP_INV(Camera* pCamera, const XMMATRIX& transform);
 	bool initiated;
 };
 

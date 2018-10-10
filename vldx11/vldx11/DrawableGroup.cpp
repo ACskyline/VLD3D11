@@ -180,6 +180,16 @@ void DrawableGroup::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat)
 	}
 }
 
+void DrawableGroup::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, FrameUniform* _pFrameUniform)
+{
+	d3d11DevCon->RSSetState(d3d11RasterizerState);
+	d3d11DevCon->OMSetDepthStencilState(d3d11DepthStencilState, 0);//Stencil Ref (0 in this case, which is not useful in our situation, it is just a place holder) can be replaced in a shader using SV_StencilRef
+	for (auto item = drawableVector.begin(); item != drawableVector.end(); item++)
+	{
+		(*item)->Draw(d3d11DevCon, _pMat, _pFrameUniform);
+	}
+}
+
 bool DrawableGroup::isInitiated()
 {
 	return initiated;
