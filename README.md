@@ -1,4 +1,4 @@
-VLD3D11 (This project is still in progress)
+VLD3D11 (this project is still in progress)
 ========================
 
 * Tested on: Windows 10, i7-7700K @ 4.20GHz 16.0GB, GTX 1080 15.96GB
@@ -38,7 +38,7 @@ Features
 
 |  geometry movement  |  light movement  | 
 |:-------------------:|:----------------:|
-|![](img/a.JPG)       |![](img/b.JPG)    |
+|![](img/a.gif)       |![](img/b.gif)    |
 
 ### details
 
