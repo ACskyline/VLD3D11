@@ -36,6 +36,10 @@ Features
 |:------------:|:------------:|:------------:|
 |![](img/1.JPG)|![](img/2.JPG)|![](img/3.JPG)|
 
+|  geometry movement  |  light movement  | 
+|:-------------------:|:----------------:|
+|![](img/a.JPG)       |![](img/b.JPG)    |
+
 ### details
 
 When rendering the geometry, for each fragment of it, I calculate a ray from the camera to that fragment. Then I use the ray to intersect the geometry in the fragment shader and find the enter and exit position. Along the vector from enter to exit, find a fixed number of positions and use them to sample a 3D noise function as transmittance. Finally, plug the transmittance in to the scattering phase function to get the final scattering factor.
