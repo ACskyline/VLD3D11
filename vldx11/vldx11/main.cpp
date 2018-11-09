@@ -19,13 +19,19 @@ BYTE keyboardLastState[256];
 LPDIRECTINPUT8 DirectInput;
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
+XMVECTORF32 ClearColor = {0.f, 0.f, 0.f, 1.f};// { 0.3f, 0.3f, 0.8f, 1.f };
 
-Renderer mRenderer(WIDTH, HEIGHT, XMVECTORF32{0.3f, 0.3f, 0.8f, 1.f}, 1.f, 0);
+Renderer mRenderer(WIDTH, HEIGHT, ClearColor, 1.f, 0);
 CubeMesh mMeshVolume;
+//SphereMesh mMeshVolume(16, 16);
+//ConeMesh mMeshVolume(16);
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
 PlaneMesh mMeshDebugShadowMap;
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelTextureDirectionalLight.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFog.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialVolume(L"myVert.hlsl", L"myPixelSphereFog.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialVolume(L"myVert.hlsl", L"myPixelTextureDirectionalLight.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialDebugShadowMap(L"myVertUI.hlsl", L"myPixelDebugShadowMap.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialShadowPass(L"myVert.hlsl", L"myPixelShadowPass.hlsl", layout, ARRAYSIZE(layout));
@@ -38,8 +44,8 @@ Transform mTransformAxis(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1)
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformDebugShadowMap(XMFLOAT3(-0.75f, 0.75f, 0.1f), XMFLOAT3(-90, 0, 0), XMFLOAT3(0.5, 1, 0.5));
 OrbitCamera mCamera(Camera::CameraType::Perspective, 10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 1.f, 50.f, 0, 0);
-//PointLight mLightPoint(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
-DirectionalLight mLightDirectional(XMFLOAT3(0, 0, 1), XMFLOAT4(1, 1, 1, 1));
+PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 20);
+//DirectionalLight mLight(XMFLOAT3(0, 0, 1), XMFLOAT4(1, 1, 1, 1));
 Texture mTex(Texture::TextureType::Default, L"checkerboard.jpg");
 RenderTexture mRTex(RenderTexture::RenderTextureType::ShadowMap, 800, 600);
 ObjectUniform mObjUniVolume;
@@ -216,7 +222,7 @@ bool InitScene()
 	objDebugShadowMap.ConnectObjectUniform(&mObjUniDebugShadowMap);
 	objCamera.SetCamera(&mCamera);
 	objCamera.ConnectFrameUniform(&mFrameUniform);
-	objLight.SetLight(&mLightDirectional); //(&mLightPoint); //
+	objLight.SetLight(&mLight);
 	objLight.ConnectSceneUniform(&mSceneUniform);
 	objLight.SetTransform(&mTransformAxis);
 	objLight.SetDrawable(&mDrawableAxis);
@@ -293,7 +299,8 @@ void DrawScene()
 	mRenderer.SetRenderTarget(&mRTex);
 	mRenderer.ClearCurrentRenderTarget({1.f}, 1.f, 0);//since I know this render target is DXGI_FORMAT_R16_FLOAT, I can supply only the red channel
 	mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass);
-	//mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass, XXX);
+	//TODO: Add another overload of Renderer::DrawGroups so that it uses a specific camera
+	//mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass, CAMERA);
 	//second pass
 	mRenderer.SetDefaultRenderTarget();
 	mRenderer.ClearCurrentRenderTargetDefault();
