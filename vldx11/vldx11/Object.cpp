@@ -2,11 +2,14 @@
 
 
 
-Object::Object() : pDrawable(nullptr),
-				   pCamera(nullptr), 
-				   pLight(nullptr),
-				   pTransform(nullptr),
-				   initiated(false)
+Object::Object() : 
+	pDrawable(nullptr),
+	pCamera(nullptr),
+	pCameraShadow(nullptr),
+	pLight(nullptr),
+	pTransform(nullptr),
+	pTransformShadow(nullptr),
+	initiated(false)
 {
 }
 
@@ -22,9 +25,13 @@ bool Object::InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11Dev
 		{
 			pObjectUniform->ApplyTransform(pTransform);
 		}
-		if (pCamera != nullptr&&pFrameUniform != nullptr)
+		if (pFrameUniform != nullptr && pCamera != nullptr)
 		{
 			pFrameUniform->ApplyCamera(pCamera, pTransform);
+		}
+		if (pFrameUniform != nullptr && pCameraShadow != nullptr)
+		{
+			pFrameUniform->ApplyCameraShadow(pCameraShadow, pTransformShadow);
 		}
 		if (pLight != nullptr&&pSceneUniform != nullptr)
 		{
@@ -54,10 +61,15 @@ void Object::UpdateObject(ID3D11DeviceContext *d3d11DevCon)
 		//wait and upload in UpdateScene()
 		pObjectUniform->ApplyTransform(pTransform);
 	}
-	if (pFrameUniform != nullptr && pCamera!=nullptr)
+	if (pFrameUniform != nullptr && pCamera!=nullptr)//pTransform could be nullptr
 	{
 		//wait and upload in UpdateScene()
 		pFrameUniform->ApplyCamera(pCamera, pTransform);
+	}
+	if (pFrameUniform != nullptr && pCameraShadow != nullptr)//pTransformShadow could be nullptr
+	{
+		//wait and upload in UpdateScene()
+		pFrameUniform->ApplyCameraShadow(pCameraShadow, pTransformShadow);
 	}
 	if (pSceneUniform != nullptr && (pCamera != nullptr || pLight != nullptr))
 	{
@@ -87,6 +99,12 @@ void Object::SetCamera(Camera *_pCamera)
 	initiated = false;
 }
 
+void Object::SetCameraShadow(Camera *_pCamera)
+{
+	pCameraShadow = _pCamera;
+	initiated = false;
+}
+
 void Object::SetLight(Light *_pLight)
 {
 	pLight = _pLight;
@@ -99,19 +117,25 @@ void Object::SetTransform(Transform *_pTransform)
 	initiated = false;
 }
 
-void Object::ConnectObjectUniform(ObjectUniform *_pObjectUniform)
+void Object::SetTransformShadow(Transform *_pTransform)
+{
+	pTransformShadow = _pTransform;
+	initiated = false;
+}
+
+void Object::ConnectObjectUniformWrite(ObjectUniform *_pObjectUniform)
 {
 	pObjectUniform = _pObjectUniform;
 	initiated = false;
 }
 
-void Object::ConnectFrameUniform(FrameUniform *_pFrameUniform)
+void Object::ConnectFrameUniformWrite(FrameUniform *_pFrameUniform)
 {
 	pFrameUniform = _pFrameUniform;
 	initiated = false;
 }
 
-void Object::ConnectSceneUniform(SceneUniform *_pSceneUniform)
+void Object::ConnectSceneUniformWrite(SceneUniform *_pSceneUniform)
 {
 	pSceneUniform = _pSceneUniform;
 	initiated = false;

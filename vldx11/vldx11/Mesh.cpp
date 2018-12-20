@@ -187,7 +187,7 @@ bool SphereMesh::InitMesh()
 
 ////////////////////////////////////////////////////////////////////////////
 
-ObjMesh::ObjMesh(string _fileName) : Mesh(Mesh::MeshType::Obj), fileName(_fileName)
+ObjMesh::ObjMesh(wstring _fileName) : Mesh(Mesh::MeshType::Obj), fileName(_fileName)
 {
 }
 
@@ -207,7 +207,7 @@ bool ObjMesh::InitMesh()
 	return initiated;
 }
 
-bool ObjMesh::LoadObjMesh(string fileName)
+bool ObjMesh::LoadObjMesh(wstring fileName)
 {
 	fstream file;
 	file.open(fileName, std::ios::in);

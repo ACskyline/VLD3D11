@@ -94,7 +94,7 @@ private:
 class ObjMesh : public Mesh
 {
 public:
-	ObjMesh(string _fileName);
+	ObjMesh(wstring _fileName);
 	~ObjMesh();
 
 	bool InitMesh();
@@ -107,9 +107,9 @@ private:
 		uint32_t NI;
 	};
 
-	string fileName;
+	wstring fileName;
 
-	bool LoadObjMesh(string fileName);
+	bool LoadObjMesh(wstring fileName);
 	void ParseObjFace(stringstream &ss, vector<Point> &tempVecPoint);
 	void AssembleObjMesh(const vector<XMFLOAT3> &vecPos,
 		const vector<XMFLOAT2> &vecUV,

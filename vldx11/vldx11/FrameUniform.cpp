@@ -54,15 +54,8 @@ void FrameUniform::SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 void FrameUniform::SetVP(Camera* pCamera, const XMMATRIX& transform)
 {
 	XMMATRIX tempV = pCamera->GetViewMatrix();
-	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-	//	XMLoadFloat3(&pCamera->target),
-	//	XMLoadFloat3(&pCamera->up));
 
 	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-	//	pCamera->aspect,
-	//	pCamera->nearClipPlane,
-	//	pCamera->farClipPlane);
 
 	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
@@ -72,15 +65,8 @@ void FrameUniform::SetVP(Camera* pCamera, const XMMATRIX& transform)
 void FrameUniform::SetVP_INV(Camera* pCamera, const XMMATRIX& transform)
 {
 	XMMATRIX tempV = pCamera->GetViewMatrix();
-	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-	//	XMLoadFloat3(&pCamera->target),
-	//	XMLoadFloat3(&pCamera->up));
 
 	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-	//	pCamera->aspect,
-	//	pCamera->nearClipPlane,
-	//	pCamera->farClipPlane);
 
 	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
@@ -91,21 +77,50 @@ void FrameUniform::SetVP_INV(Camera* pCamera, const XMMATRIX& transform)
 void FrameUniform::SetP_VP_INV(Camera* pCamera, const XMMATRIX& transform)
 {
 	XMMATRIX tempV = pCamera->GetViewMatrix();
-	//XMMatrixLookAtLH(XMLoadFloat3(&pCamera->position),
-	//	XMLoadFloat3(&pCamera->target),
-	//	XMLoadFloat3(&pCamera->up));
 
 	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-	//XMMatrixPerspectiveFovLH(XMConvertToRadians(pCamera->fovDegree),
-	//	pCamera->aspect,
-	//	pCamera->nearClipPlane,
-	//	pCamera->farClipPlane);
 
 	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.P, tempP);
 	XMStoreFloat4x4(&frameUniformData.VP, temp);
 	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
+}
+
+void FrameUniform::SetVP_Shadow(Camera* pCamera, const XMMATRIX& transform)
+{
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
+
+	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
+}
+
+void FrameUniform::SetVP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform)
+{
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
+
+	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
+	XMStoreFloat4x4(&frameUniformData.VP_INV_SHADOW, XMMatrixInverse(nullptr, temp));
+}
+
+void FrameUniform::SetP_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform)
+{
+	XMMATRIX tempV = pCamera->GetViewMatrix();
+
+	XMMATRIX tempP = pCamera->GetProjectionMatrix();
+
+	XMMATRIX temp = XMMatrixInverse(nullptr, transform) * tempV * tempP;
+
+	XMStoreFloat4x4(&frameUniformData.P_SHADOW, tempP);
+	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
+	XMStoreFloat4x4(&frameUniformData.VP_INV_SHADOW, XMMatrixInverse(nullptr, temp));
 }
 
 void FrameUniform::ApplyCamera(Camera* pCamera, Transform* pTransform)
@@ -119,6 +134,21 @@ void FrameUniform::ApplyCamera(Camera* pCamera, Transform* pTransform)
 
 	//view matrix and projection matrix
 	SetP_VP_INV(pCamera, m);
+
+	needToUpload = true;
+}
+
+void FrameUniform::ApplyCameraShadow(Camera* pCamera, Transform* pTransform)
+{
+	XMMATRIX m(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	if (pTransform != nullptr) m = pTransform->GetTransform();
+
+	//camera position
+	XMFLOAT4 cameraPosVec4(pCamera->position.x, pCamera->position.y, pCamera->position.z, 1);//w is 1
+	XMStoreFloat3(&frameUniformData.cameraPos_SHADOW, XMVector4Transform(XMLoadFloat4(&cameraPosVec4), m));
+
+	//view matrix and projection matrix
+	SetP_VP_INV_Shadow(pCamera, m);
 
 	needToUpload = true;
 }

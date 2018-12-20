@@ -1,4 +1,4 @@
-#include "myInclude.hlsl"
+#include "myInclude.hlsli"
 
 float4 main(v2f IN) : SV_TARGET
 {
@@ -21,14 +21,13 @@ float4 main(v2f IN) : SV_TARGET
 
     for (int i = 0; i < STEP; i++)
     {
-        //TO DO: INTERSECTION DETECTION & RAY MARCHING
         float3 current = start + i * delta;
         float3 dir_light = normalize(LIGHT_POS - current);
         float cosTheta = (dot(-dir, dir_light));
         fogColor += LIGHT_COL.rgb * Phase(0.8, cosTheta) * saturate(cnoise(current));
     }
     
-    fogColor = fogColor / STEP * INTENSITY;
+    fogColor = INTENSITY * fogColor / STEP;
 
     return float4(fogColor, 1);
 }

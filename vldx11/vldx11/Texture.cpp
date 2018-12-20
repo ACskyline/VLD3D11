@@ -242,19 +242,19 @@ bool RenderTexture::InitRenderTextureShadowMap(ID3D11Device* d3d11Device)
 	if (!CheckError(hr, nullptr)) return false;
 
 	///////////////////////////////////////////////////////////////////////////////
-	//sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;//default
-	//sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;//default
-	//sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;//default
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;//linear makes no sense for shadow map
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 	//sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;//default
 	//sampDesc.MinLOD = -FLT_MAX;//default
 	//sampDesc.MinLOD = FLT_MAX;//default
 	//sampDesc.MipLODBias = 0.f;//default
 	//sampDesc.MaxAnisotropy = 1;//default
 	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;//default
-	//sampDesc.BorderColor[0] = 1.f;//default
-	//sampDesc.BorderColor[1] = 1.f;//default
-	//sampDesc.BorderColor[2] = 1.f;//default
-	//sampDesc.BorderColor[3] = 1.f;//default
+	sampDesc.BorderColor[0] = 1.f;//default
+	sampDesc.BorderColor[1] = 1.f;//default
+	sampDesc.BorderColor[2] = 1.f;//default
+	sampDesc.BorderColor[3] = 1.f;//default
 
 	hr = d3d11Device->CreateSamplerState(&sampDesc, &samplerState);
 	if (!CheckError(hr, nullptr)) return false;

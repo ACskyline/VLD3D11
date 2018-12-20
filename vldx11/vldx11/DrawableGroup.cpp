@@ -1,8 +1,11 @@
 #include "DrawableGroup.h"
 
-
-
-DrawableGroup::DrawableGroup(DrawableGroupType _type) : type(_type), d3d11RasterizerState(nullptr), d3d11DepthStencilState(nullptr), initiated(false)
+DrawableGroup::DrawableGroup(DrawableGroupType _type) : 
+	type(_type), 
+	d3d11RasterizerState(nullptr), 
+	d3d11DepthStencilState(nullptr), 
+	initiated(false),
+	enabled(true)
 {
 }
 
@@ -190,7 +193,17 @@ void DrawableGroup::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, Fram
 	}
 }
 
-bool DrawableGroup::isInitiated()
+bool DrawableGroup::IsInitiated()
 {
 	return initiated;
+}
+
+bool DrawableGroup::IsEnabled()
+{
+	return enabled;
+}
+
+void DrawableGroup::SetEnabled(bool _enabled)
+{
+	enabled = _enabled;
 }

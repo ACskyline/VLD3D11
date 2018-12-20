@@ -169,17 +169,17 @@ bool Drawable::IsInitiated()
 	return initiated;
 }
 
-void Drawable::ConnectObjectUniform(ObjectUniform *_pObjectUniform)
+void Drawable::ConnectObjectUniformRead(ObjectUniform *_pObjectUniform)
 {
 	pObjectUniform = _pObjectUniform;
 }
 
-void Drawable::ConnectFrameUniform(FrameUniform *_pFrameUniform)
+void Drawable::ConnectFrameUniformRead(FrameUniform *_pFrameUniform)
 {
 	pFrameUniform = _pFrameUniform;
 }
 
-void Drawable::ConnectSceneUniform(SceneUniform *_pSceneUniform)
+void Drawable::ConnectSceneUniformRead(SceneUniform *_pSceneUniform)
 {
 	pSceneUniform = _pSceneUniform;
 }

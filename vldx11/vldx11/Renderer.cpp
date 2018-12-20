@@ -156,7 +156,8 @@ void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec)
 	//Draw Call
 	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
 	{
-		(*item)->Draw(d3d11DevCon);
+		if ((*item)->IsEnabled())
+			(*item)->Draw(d3d11DevCon);
 	}
 }
 
@@ -165,7 +166,8 @@ void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material
 	//Draw Call
 	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
 	{
-		(*item)->Draw(d3d11DevCon, _pMat);
+		if ((*item)->IsEnabled())
+			(*item)->Draw(d3d11DevCon, _pMat);
 	}
 }
 
@@ -174,7 +176,8 @@ void Renderer::DrawGroups(vector<DrawableGroup*>& GlobalDrawableGrpVec, Material
 	//Draw Call
 	for (auto item = GlobalDrawableGrpVec.begin(); item != GlobalDrawableGrpVec.end(); item++)
 	{
-		(*item)->Draw(d3d11DevCon, _pMat, _pFrameUniform);
+		if((*item)->IsEnabled())
+			(*item)->Draw(d3d11DevCon, _pMat, _pFrameUniform);
 	}
 }
 

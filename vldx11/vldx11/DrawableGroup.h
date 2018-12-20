@@ -17,13 +17,15 @@ public:
 	void Draw(ID3D11DeviceContext* d3d11DevCon);
 	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat);
 	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, FrameUniform* _pFrameUniform);
-	bool isInitiated();
+	bool IsInitiated();
+	bool IsEnabled();
+	void SetEnabled(bool _enabled);
 
 private:
 	bool initiated;
+	bool enabled;
 	DrawableGroupType type;
 	vector<Drawable*> drawableVector;
 	ID3D11RasterizerState* d3d11RasterizerState;
 	ID3D11DepthStencilState* d3d11DepthStencilState;
 };
-

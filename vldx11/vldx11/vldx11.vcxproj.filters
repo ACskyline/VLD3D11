@@ -136,9 +136,6 @@
     <FxCompile Include="myVert.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="myInclude.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
     <FxCompile Include="myPixelSphereFog.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
@@ -173,6 +170,9 @@
       <Filter>Source Files</Filter>
     </FxCompile>
     <FxCompile Include="myVertUI.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myInclude.hlsli">
       <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>

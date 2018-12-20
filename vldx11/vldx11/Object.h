@@ -21,17 +21,21 @@ public:
 
 	void SetDrawable(Drawable *_pDrawable);
 	void SetCamera(Camera *_pCamera);
+	void SetCameraShadow(Camera *_pCameraShadow);
 	void SetLight(Light *_pLight);
 	void SetTransform(Transform *_pTransform);
-	void ConnectObjectUniform(ObjectUniform *_pObjectUniform);
-	void ConnectFrameUniform(FrameUniform *_pFrameUniform);
-	void ConnectSceneUniform(SceneUniform *_pSceneUniform);
+	void SetTransformShadow(Transform *_pTransform);
+	void ConnectObjectUniformWrite(ObjectUniform *_pObjectUniform);
+	void ConnectFrameUniformWrite(FrameUniform *_pFrameUniform);
+	void ConnectSceneUniformWrite(SceneUniform *_pSceneUniform);
 
 private:
 	Drawable* pDrawable;
 	Camera* pCamera;
+	Camera* pCameraShadow;
 	Light* pLight;
 	Transform* pTransform;
+	Transform* pTransformShadow;
 	ObjectUniform* pObjectUniform;
 	FrameUniform* pFrameUniform;
 	SceneUniform* pSceneUniform;

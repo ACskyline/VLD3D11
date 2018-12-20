@@ -1,4 +1,4 @@
-#include "myInclude.hlsl"
+#include "myInclude.hlsli"
 
 v2f main(a2v IN)
 {
@@ -8,6 +8,7 @@ v2f main(a2v IN)
     //but since there is a row-major-to-column-major conversion from cpu to gpu
     //and we are doing this conversion, so the right multiply becomes left multiply
     //e.g. a * M * V * P = ((VP)^T * M^T * a^T)^T
+    //that is, (VP)^T is actually VP in code, M^T is actually M in code
     //since row vector is treated as column vector and vas versa, it becomes
     // a * M * V * P = ((VP)^T * M^T * a)
 

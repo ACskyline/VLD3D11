@@ -20,9 +20,9 @@ public:
 	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, FrameUniform* _pFrameUniform);
 	bool InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
 	bool IsInitiated();
-	void ConnectObjectUniform(ObjectUniform *_pObjectUniform);
-	void ConnectFrameUniform(FrameUniform *_pFrameUniform);
-	void ConnectSceneUniform(SceneUniform *_pSceneUniform);
+	void ConnectObjectUniformRead(ObjectUniform *_pObjectUniform);
+	void ConnectFrameUniformRead(FrameUniform *_pFrameUniform);
+	void ConnectSceneUniformRead(SceneUniform *_pSceneUniform);
 
 private:
 	DrawableType type;
