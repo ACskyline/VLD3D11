@@ -48,6 +48,7 @@ struct a2v
 struct v2f
 {
 	float4 pos : SV_POSITION;
+    float4 wtf : WTF;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD0;
 	float3 posW : TEXCOORD1;
