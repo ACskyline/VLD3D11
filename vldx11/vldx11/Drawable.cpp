@@ -1,8 +1,11 @@
 #include "Drawable.h"
 
 Drawable::Drawable(DrawableType _type, Mesh* _pMesh, Material* _pMat) : 
-	pMesh(_pMesh), pMat(_pMat), initiated(false),
-	vertexBuffer(nullptr), indexBuffer(nullptr), type(_type)
+	type(_type),
+	pMesh(_pMesh), 
+	pMat(_pMat),
+	vertexBuffer(nullptr), 
+	indexBuffer(nullptr)
 {
 }
 
@@ -69,7 +72,7 @@ void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon)
 
 	SetVertexIndexBuffer(d3d11DevCon);
 
-	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	for (uint32_t i = 0; i < TEXTURE_SLOT::COUNT; i++)
 	{
 		if (pMat->HasTexture(i))
 		{
@@ -96,7 +99,7 @@ void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat)
 
 	SetVertexIndexBuffer(d3d11DevCon);
 
-	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	for (uint32_t i = 0; i < TEXTURE_SLOT::COUNT; i++)
 	{
 		if (_pMat->HasTexture(i))
 		{
@@ -123,7 +126,7 @@ void Drawable::Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, FrameUnif
 
 	SetVertexIndexBuffer(d3d11DevCon);
 
-	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	for (uint32_t i = 0; i < TEXTURE_SLOT::COUNT; i++)
 	{
 		if (_pMat->HasTexture(i))
 		{
@@ -149,24 +152,13 @@ void Drawable::UseLineList(ID3D11DeviceContext* d3d11DevCon)
 	pMat->SetLayoutLineList(d3d11DevCon);
 }
 
-
 bool Drawable::InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!initiated)
-	{
-		if (!pMesh->InitMesh()) return false;
-		if (!pMat->InitMaterial(d3d11Device)) return false;
-		if (!CreateBuffer(d3d11Device)) return false;
-		VertexIndexBufferData(d3d11DevCon);
-		printf("drawble create buffer done!\n");
-		initiated = true;
-	}
-	return true;
-}
+	if (!CreateBuffer(d3d11Device)) return false;
+	VertexIndexBufferData(d3d11DevCon);
+	printf("drawble create buffer done!\n");
 
-bool Drawable::IsInitiated()
-{
-	return initiated;
+	return true;
 }
 
 void Drawable::ConnectObjectUniformRead(ObjectUniform *_pObjectUniform)

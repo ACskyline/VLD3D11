@@ -17,17 +17,20 @@ float4 main(v2f IN) : SV_TARGET
     finish = mul(M, float4(finish,1)).xyz;
 
     float3 delta = (finish - start) / STEP;
-    float3 fogColor = float3(0,0,0);
+    float4 fogColor = float4(0,0,0,0);
 
     for (int i = 0; i < STEP; i++)
     {
         float3 current = start + i * delta;
-        float3 dir_light = normalize(LIGHT_POS - current);
-        float cosTheta = (dot(-dir, dir_light));
-        fogColor += LIGHT_COL.rgb * Phase(0.8, cosTheta) * saturate(cnoise(current));
+        if(!InShadow(current))
+        {
+            float3 dir_light = normalize(LIGHT_POS - current);
+            float cosTheta = (dot(-dir, dir_light));
+            fogColor += float4(LIGHT_COL.rgb, 1) * Phase(0.8, cosTheta) * saturate(cnoise(current));
+        }
     }
     
     fogColor = INTENSITY * fogColor / STEP;
 
-    return float4(fogColor, 1);
+    return fogColor;
 }

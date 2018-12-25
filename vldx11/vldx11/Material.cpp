@@ -6,8 +6,7 @@ Material::Material(wstring _vsName,
 				   uint8_t _vertLayoutDescSize) : 
 	vsName(_vsName), 
 	psName(_psName), 
-	vertLayoutDescSize(_vertLayoutDescSize), 
-	initiated(false)
+	vertLayoutDescSize(_vertLayoutDescSize)
 {
 	vertLayoutDesc = new D3D11_INPUT_ELEMENT_DESC[vertLayoutDescSize];
 	for (int i = 0; i < vertLayoutDescSize; i++)
@@ -15,7 +14,7 @@ Material::Material(wstring _vsName,
 		vertLayoutDesc[i] = _vertLayoutDesc[i];
 	}
 
-	for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
+	for (uint32_t i = 0; i < TEXTURE_SLOT::COUNT; i++)
 	{
 		pTex[i] = nullptr;
 	}
@@ -36,10 +35,10 @@ bool Material::CreateShader(ID3D11Device* d3d11Device)
 	HRESULT hr;
 	ID3DBlob* error = nullptr;
 
-	hr = D3DCompileFromFile(vsName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_4_0", 0, 0, &VS_Buffer, &error);//entry point is the function name
+	hr = D3DCompileFromFile(vsName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &VS_Buffer, &error);//entry point is the function name
 	if (!CheckError(hr, error)) return false;
 
-	hr = D3DCompileFromFile(psName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_4_0", 0, 0, &PS_Buffer, &error);//entry point is the function name
+	hr = D3DCompileFromFile(psName.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &PS_Buffer, &error);//entry point is the function name
 	if (!CheckError(hr, error)) return false;
 
 	hr = d3d11Device->CreateVertexShader(VS_Buffer->GetBufferPointer(), VS_Buffer->GetBufferSize(), NULL, &VS);
@@ -89,33 +88,12 @@ void Material::SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon)
 
 bool Material::InitMaterial(ID3D11Device* d3d11Device)
 {
-	if (!initiated)
-	{
-		if (!CreateShader(d3d11Device)) return false;
-		printf("material create buffer done!\n");
-		if (!CreateLayout(d3d11Device)) return false;
-		printf("material create layout done!\n");
+	if (!CreateShader(d3d11Device)) return false;
+	printf("material create shader done!\n");
+	if (!CreateLayout(d3d11Device)) return false;
+	printf("material create layout done!\n");
 
-		for (uint32_t i = 0; i < MAX_TEXTURE_SLOT; i++)
-		{
-			if (HasTexture(i))
-			{
-				if (!pTex[i]->IsInitiated())
-				{
-					if (!pTex[i]->InitTexture(d3d11Device))
-						return false;
-				}
-			}
-		}
-
-		initiated = true;
-	}
 	return true;
-}
-
-bool Material::IsInitiated()
-{
-	return initiated;
 }
 
 void Material::SetTexture(uint32_t slot, Texture* _pTex)
@@ -135,5 +113,5 @@ bool Material::HasTexture(uint32_t slot)
 
 void Material::UseTexture(uint32_t slot, ID3D11DeviceContext* d3d11DevCon)
 {
-	pTex[slot]->UseTextureData(slot, d3d11DevCon);//temporary, only use slot 0
+	pTex[slot]->UseTextureData(slot, d3d11DevCon);
 }

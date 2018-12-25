@@ -39,6 +39,5 @@ private:
 	void SetM(Transform* pTransform);
 	void SetM_INV(Transform* pTransform);
 	void SetM_INV_TRANS(Transform* pTransform);
-	bool initiated;
 };
 

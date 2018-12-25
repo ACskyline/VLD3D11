@@ -28,6 +28,7 @@ private:
 	XMVECTORF32 clearColor;
 	float clearDepth;
 	uint8_t clearStencil;
+	D3D11_VIEWPORT viewport;
 	ID3D11Texture2D* depthStencilBuffer;//default depth stencil buffer, initialized in InitRednerer
 	ID3D11RenderTargetView* renderTargetView;//default RTV, initialized in InitRednerer
 	ID3D11DepthStencilView* depthStencilView;//default DSV, initialized in InitRednerer

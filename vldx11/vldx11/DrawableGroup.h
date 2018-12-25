@@ -28,4 +28,5 @@ private:
 	vector<Drawable*> drawableVector;
 	ID3D11RasterizerState* d3d11RasterizerState;
 	ID3D11DepthStencilState* d3d11DepthStencilState;
+	ID3D11BlendState* d3d11BlendState;
 };

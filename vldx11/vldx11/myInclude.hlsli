@@ -2,7 +2,7 @@
 #define INFINITE_MAX 1000
 #define PI 3.14159265
 #define EPSILON 0.0000001
-#define SHADOW_BIAS 0.001
+#define SHADOW_BIAS 0.00001
 
 cbuffer ObjectUniform : register(b0)
 {
@@ -14,9 +14,11 @@ cbuffer ObjectUniform : register(b0)
 
 cbuffer FrameUniform : register(b1)
 {
+    float4x4 V;
     float4x4 P;
 	float4x4 VP;
 	float4x4 VP_INV;
+    float4x4 V_SHADOW;
     float4x4 P_SHADOW;
     float4x4 VP_SHADOW;
     float4x4 VP_INV_SHADOW;
@@ -48,48 +50,56 @@ struct a2v
 struct v2f
 {
 	float4 pos : SV_POSITION;
-    float4 wtf : WTF;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD0;
 	float3 posW : TEXCOORD1;
 	float3 norW : TEXCOORD2;
+    float3 posEye : TEXCOORD3;
 };
 
-Texture2D ShadowMap : register(t0);
-SamplerState SamplerShadowMap : register(s0);
+Texture2D MainTexture : register(t0);
+SamplerState SamplerMainTexture : register(s0);
 
-Texture2D MainTexture : register(t1);
-SamplerState SamplerMainTexture : register(s1);
+Texture2D ShadowMap : register(t1);
+SamplerState SamplerShadowMap : register(s1);
+
+Texture2D ShadowMapPCF : register(t2);//This is empty because we are only rendering to ShadowMap. 
+SamplerComparisonState SamplerShadowMapPCF : register(s2);//We only need this to use PCF
 
 float2 FlipV(float2 uv)
 {
     return float2(uv.x, 1-uv.y);
 }
 
-//TODO: Handle the situation where the wpos is outside the view frustum of the light camera
+float Shadow(float3 wpos)
+{
+    float3 eyePos = mul(V_SHADOW, float4(wpos, 1.0f)).xyz;
+    float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
+    //frustum culling
+    if (cpos.z < 0 || cpos.z > cpos.w || cpos.x > cpos.w || cpos.x < -cpos.w || cpos.y > cpos.w || cpos.y < -cpos.w)
+        return 1.0;
+    float3 ppos = cpos.xyz / cpos.w;
+    float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
+    float depth = ppos.z;//eyePos.z; //
+    float depthShadowMap = ShadowMap.SampleCmpLevelZero(SamplerShadowMapPCF, FlipV(uv), depth - SHADOW_BIAS).r;
+    return depthShadowMap;
+}
+
 bool InShadow(float3 wpos)
 {
+    float3 eyePos = mul(V_SHADOW, float4(wpos, 1.0f)).xyz;
     float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
     //frustum culling
     if (cpos.z < 0 || cpos.z > cpos.w || cpos.x > cpos.w || cpos.x < -cpos.w || cpos.y > cpos.w || cpos.y < -cpos.w)
         return false;
     float3 ppos = cpos.xyz / cpos.w;
     float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
-    float depthShadowMap = ShadowMap.Sample(SamplerShadowMap, FlipV(uv)).r;
-    float depth = ppos.z;
-    if(depth > depthShadowMap + SHADOW_BIAS)
+    float depthShadowMap = ShadowMap.SampleLevel(SamplerShadowMap, FlipV(uv), 0).r;
+    float depth = ppos.z;//eyePos.z; //
+    if (depth > depthShadowMap + SHADOW_BIAS)
         return true;
     else
         return false;
-}
-
-float ShadowMapCol(float3 wpos)
-{
-    float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
-    float3 ppos = cpos.xyz / cpos.w;
-    float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
-    
-    return ShadowMap.Sample(SamplerShadowMap, FlipV(uv)).r;
 }
 
 float AttenuatePointLight(float3 posW)

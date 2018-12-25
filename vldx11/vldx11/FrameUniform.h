@@ -7,9 +7,11 @@ class FrameUniform
 {
 	struct FrameUniformData
 	{
+		XMFLOAT4X4 V;
 		XMFLOAT4X4 P;
 		XMFLOAT4X4 VP;
 		XMFLOAT4X4 VP_INV;
+		XMFLOAT4X4 V_SHADOW;
 		XMFLOAT4X4 P_SHADOW;
 		XMFLOAT4X4 VP_SHADOW;
 		XMFLOAT4X4 VP_INV_SHADOW;
@@ -59,9 +61,10 @@ private:
 	void SetVP(Camera* pCamera, const XMMATRIX& transform);
 	void SetVP_INV(Camera* pCamera, const XMMATRIX& transform);
 	void SetP_VP_INV(Camera* pCamera, const XMMATRIX& transform);
+	void SetV_P_VP_INV(Camera* pCamera, const XMMATRIX& transform);
 	void SetVP_Shadow(Camera* pCamera, const XMMATRIX& transform);
 	void SetVP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform);
 	void SetP_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform);
-	bool initiated;
+	void SetV_P_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform);
 };
 

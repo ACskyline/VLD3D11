@@ -2,7 +2,7 @@
 
 
 
-ObjectUniform::ObjectUniform() : objectUniformBuffer(nullptr), needToUpload(false), initiated(false)
+ObjectUniform::ObjectUniform() : objectUniformBuffer(nullptr), needToUpload(false)
 {
 }
 
@@ -39,12 +39,12 @@ void ObjectUniform::ObjectUniformBufferData(ID3D11DeviceContext* d3d11DevCon)
 
 void ObjectUniform::SetObjectUniformBufferVS(ID3D11DeviceContext* d3d11DevCon)
 {
-	d3d11DevCon->VSSetConstantBuffers(OBJECT_UNIFORM_SOLT, 1, &objectUniformBuffer);
+	d3d11DevCon->VSSetConstantBuffers(UNIFORM_SLOT::OBJECT, 1, &objectUniformBuffer);
 }
 
 void ObjectUniform::SetObjectUniformBufferPS(ID3D11DeviceContext* d3d11DevCon)
 {
-	d3d11DevCon->PSSetConstantBuffers(OBJECT_UNIFORM_SOLT, 1, &objectUniformBuffer);
+	d3d11DevCon->PSSetConstantBuffers(UNIFORM_SLOT::OBJECT, 1, &objectUniformBuffer);
 }
 
 void ObjectUniform::SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
@@ -91,14 +91,10 @@ void ObjectUniform::ApplyCol(float r, float g, float b, float a)
 
 bool ObjectUniform::InitObjectUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
-	if (!initiated)
-	{
-		if (!CreateBuffer(d3d11Device)) return false;
-		ObjectUniformBufferData(d3d11DevCon);
-		SetObjectUniformBufferVSPS(d3d11DevCon);
-		printf("objectUniform create buffer done!\n");
-		initiated = true;
-	}
+	if (!CreateBuffer(d3d11Device)) return false;
+	ObjectUniformBufferData(d3d11DevCon);
+	SetObjectUniformBufferVSPS(d3d11DevCon);
+	printf("objectUniform create buffer done!\n");
 	return true;
 }
 

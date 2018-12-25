@@ -15,8 +15,7 @@ public:
 	Object();
 	~Object();
 
-	bool InitObject(ID3D11Device *d3d11Device, ID3D11DeviceContext *d3d11DevCon);
-	void UpdateObject(ID3D11DeviceContext *d3d11DevCon);
+	void UpdateObject();
 	void DrawObject(ID3D11DeviceContext *d3d11DevCon);
 
 	void SetDrawable(Drawable *_pDrawable);
@@ -39,6 +38,5 @@ private:
 	ObjectUniform* pObjectUniform;
 	FrameUniform* pFrameUniform;
 	SceneUniform* pSceneUniform;
-	bool initiated;
 };
 

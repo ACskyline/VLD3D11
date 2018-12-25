@@ -1,7 +1,5 @@
 #include "Renderer.h"
 
-
-
 Renderer::Renderer(uint32_t _width, uint32_t _height, XMVECTORF32 _clearColor, float _clearDepth, uint8_t _clearStencil) :
 	width(_width), height(_height), frame(0), clearColor(_clearColor), clearDepth(_clearDepth), clearStencil(_clearStencil),
 	SwapChain(nullptr), 
@@ -27,6 +25,16 @@ bool Renderer::InitRenderer(HWND hwnd)
 {
 	if (!InitD3D11App(hwnd)) return false;
 	InitViewport();
+
+	//UINT formatSupport;
+	//HRESULT hr = d3d11Device->CheckFormatSupport(DXGI_FORMAT_R16_FLOAT, &formatSupport);
+	//if (!SUCCEEDED(hr) || !(formatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE_COMPARISON))
+	//{
+	//	printf("fucked!\n");
+	//	return false;
+	//}
+
+	return true;
 }
 
 bool Renderer::InitD3D11App(HWND hwnd)
@@ -61,7 +69,9 @@ bool Renderer::InitD3D11App(HWND hwnd)
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 	//Create our SwapChain
-	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, NULL, NULL, NULL, D3D11_SDK_VERSION, &swapChainDesc, &SwapChain, &d3d11Device, NULL, &d3d11DevCon);
+	UINT flag = 0;
+	//flag = flag | D3D11_CREATE_DEVICE_DEBUG;//enable debug layer
+	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flag, NULL, NULL, D3D11_SDK_VERSION, &swapChainDesc, &SwapChain, &d3d11Device, NULL, &d3d11DevCon);
 	if (!CheckError(hr, nullptr)) return false;
 
 	//Create our Default Render Target View
@@ -124,22 +134,22 @@ void Renderer::SetDefaultRenderTarget()
 {
 	currentRTV = renderTargetView;
 	currentDSV = depthStencilView;
+	d3d11DevCon->RSSetViewports(1, &viewport);
 	d3d11DevCon->OMSetRenderTargets(1, &currentRTV, currentDSV);
 }
 
 void Renderer::SetRenderTarget(RenderTexture* renderTexture)
 {
-	if (renderTexture->HasRenderTargetView()) currentRTV = renderTexture->GetRenderTargetView();
-	if (renderTexture->HasDepthStencilView()) currentDSV = renderTexture->GetDepthStencilView();
+	D3D11_VIEWPORT viewports[] = { renderTexture->GetViewport() };
+	currentRTV = renderTexture->GetRenderTargetView();
+	currentDSV = renderTexture->GetDepthStencilView();
+	d3d11DevCon->RSSetViewports(1, viewports);
 	d3d11DevCon->OMSetRenderTargets(1, &currentRTV, currentDSV);
 }
 
 void Renderer::InitViewport()
 {
-	//Create the Viewport
-	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
+	//init the Viewport
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.Width = width;

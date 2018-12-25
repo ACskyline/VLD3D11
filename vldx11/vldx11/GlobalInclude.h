@@ -24,13 +24,8 @@
 #define MY_DELETE(ptr) if(ptr!=nullptr){ delete ptr; ptr = nullptr;}
 #define MY_DELETE_ARRAY(ptr) if(ptr!=nullptr){ delete [] ptr; ptr = nullptr;}
 
-#define OBJECT_UNIFORM_SOLT 0
-#define FRAME_UNIFORM_SOLT 1
-#define SCENE_UNIFORM_SOLT 2
-
-#define SHADOW_TEXTURE_SLOT 0
-#define MAIN_TEXTURE_SLOT 1
-#define MAX_TEXTURE_SLOT 2
+enum UNIFORM_SLOT { OBJECT, FRAME, SCENE };
+enum TEXTURE_SLOT { MAIN, SHADOW, SHADOW_PCF, COUNT };
 
 #define KEYDOWN(name, key) ((name)[(key)] & 0x80)
 

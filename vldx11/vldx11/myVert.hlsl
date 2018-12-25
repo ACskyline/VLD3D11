@@ -13,10 +13,10 @@ v2f main(a2v IN)
     // a * M * V * P = ((VP)^T * M^T * a)
 
     o.pos = mul(mul(VP, M), float4(IN.pos, 1.0f));
-    o.wtf = o.pos;
     o.color = IN.col * COL_OBJECT * COL_FRAME;
-    o.posW = mul(M, float4(IN.pos, 1)).xyz;
-    
+    o.posW = mul(M, float4(IN.pos, 1.0f)).xyz;
+    o.posEye = mul(mul(V, M), float4(IN.pos, 1.0f)).xyz;
+
     //transpose of inverse of the model matrix, 
     //since d3d use right multiply and the cpu to gpu conversion, right multiply the transpose of a matrix
     //becomes right multiply the matrix itself

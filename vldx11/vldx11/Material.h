@@ -15,7 +15,6 @@ public:
 	void SetLayoutLineList(ID3D11DeviceContext* d3d11DevCon);
 
 	bool InitMaterial(ID3D11Device* d3d11Device);
-	bool IsInitiated();
 
 	void SetTexture(uint32_t slot, Texture* pTex);
 	Texture* GetTexture(uint32_t slot);
@@ -32,7 +31,6 @@ private:
 	ID3D11InputLayout* vertLayout;
 	D3D11_INPUT_ELEMENT_DESC* vertLayoutDesc;
 	uint8_t vertLayoutDescSize;
-	bool initiated;
-	Texture* pTex[MAX_TEXTURE_SLOT];
+	Texture* pTex[TEXTURE_SLOT::COUNT];
 };
 

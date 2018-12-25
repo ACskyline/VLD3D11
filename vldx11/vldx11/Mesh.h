@@ -12,7 +12,6 @@ public:
 	virtual bool InitMesh() = 0;
 	void DestroyMesh();
 	void PrintAll();
-	bool IsInitiated();
 
 	uint32_t vertexNum;
 	uint32_t indexNum;
@@ -21,7 +20,6 @@ public:
 
 protected:
 	Mesh(MeshType _type);
-	bool initiated;
 
 private:
 	MeshType type;

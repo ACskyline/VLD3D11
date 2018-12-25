@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 Texture::Texture(TextureType _type, wstring _fileName) :
-	type(_type), fileName(_fileName), initiated(false)
+	type(_type), fileName(_fileName)
 {
 }
 
@@ -18,7 +18,6 @@ Texture::~Texture()
 
 bool Texture::InitTexture(ID3D11Device* d3d11Device)
 {
-	initiated = false;
 	HRESULT hr;
 	hr = CreateWICTextureFromFile(d3d11Device, fileName.c_str(), (ID3D11Resource**)(&(textureRes)), &textureResView);
 	//hr = CreateWICTextureFromFileEx(d3d11Device, 
@@ -52,19 +51,13 @@ bool Texture::InitTexture(ID3D11Device* d3d11Device)
 	hr = d3d11Device->CreateSamplerState(&sampDesc, &samplerState);
 	if (!CheckError(hr, nullptr)) return false;
 
-	initiated = true;
-	return initiated;
+	return true;
 }
 
 void Texture::UseTextureData(uint32_t slot, ID3D11DeviceContext* d3d11DevCon)
 {
 	d3d11DevCon->PSSetShaderResources(slot, 1, &textureResView);
 	d3d11DevCon->PSSetSamplers(slot, 1, &samplerState);
-}
-
-bool Texture::IsInitiated()
-{
-	return initiated;
 }
 
 void Texture::Debug()
@@ -84,6 +77,12 @@ void Texture::Debug()
 		texture2DDesc.Width);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+// RENDER TEXTURE
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 RenderTexture::RenderTexture(RenderTextureType _typeRT, int _width, int _height) :
 	Texture(Texture::TextureType::Default), 
 	typeRT(_typeRT), 
@@ -92,6 +91,12 @@ RenderTexture::RenderTexture(RenderTextureType _typeRT, int _width, int _height)
 	width(_width),
 	height(_height)
 {
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = _width;
+	viewport.Height = _height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
 }
 
 RenderTexture::~RenderTexture()
@@ -102,22 +107,22 @@ RenderTexture::~RenderTexture()
 
 bool RenderTexture::InitTexture(ID3D11Device* d3d11Device)
 {
-	initiated = false;
+	bool result = false;
 
 	if (typeRT == RenderTexture::RenderTextureType::Default)
 	{
-		initiated = InitRenderTextureDefault(d3d11Device);
+		result = InitRenderTextureDefault(d3d11Device);
 	}
-	if (typeRT == RenderTexture::RenderTextureType::ShadowMap)
+	else if (typeRT == RenderTexture::RenderTextureType::ShadowMap)
 	{
-		initiated = InitRenderTextureShadowMap(d3d11Device);
+		result = InitRenderTextureShadowMap(d3d11Device);
 	}
-	if (typeRT == RenderTexture::RenderTextureType::WithDepthStencil)
+	else if (typeRT == RenderTexture::RenderTextureType::ShadowMapPCF)
 	{
-		initiated = InitRenderTextureWithDepthStencil(d3d11Device);
+		result = InitRenderTextureShadowMapPCF(d3d11Device);
 	}
 
-	return initiated;
+	return result;
 }
 
 bool RenderTexture::InitRenderTextureDefault(ID3D11Device* d3d11Device)
@@ -208,7 +213,7 @@ bool RenderTexture::InitRenderTextureShadowMap(ID3D11Device* d3d11Device)
 	textureDesc.Height = height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R16_FLOAT;
+	textureDesc.Format = DXGI_FORMAT_R16_UNORM;// DXGI_FORMAT_R32_FLOAT;// DXGI_FORMAT_R16G16B16A16_FLOAT;// 
 	textureDesc.SampleDesc.Count = 1;
 	textureDesc.SampleDesc.Quality = 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -250,19 +255,41 @@ bool RenderTexture::InitRenderTextureShadowMap(ID3D11Device* d3d11Device)
 	//sampDesc.MinLOD = FLT_MAX;//default
 	//sampDesc.MipLODBias = 0.f;//default
 	//sampDesc.MaxAnisotropy = 1;//default
-	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;//default
-	sampDesc.BorderColor[0] = 1.f;//default
-	sampDesc.BorderColor[1] = 1.f;//default
-	sampDesc.BorderColor[2] = 1.f;//default
-	sampDesc.BorderColor[3] = 1.f;//default
+	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//sampDesc.BorderColor[0] = 1.f;//default
+	//sampDesc.BorderColor[1] = 1.f;//default
+	//sampDesc.BorderColor[2] = 1.f;//default
+	//sampDesc.BorderColor[3] = 1.f;//default
 
 	hr = d3d11Device->CreateSamplerState(&sampDesc, &samplerState);
+	if (!CheckError(hr, nullptr)) return false;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Setup the depth stencil buffer and view.
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	hr = d3d11Device->CreateTexture2D(&depthStencilDesc, NULL, &depthStencilBuffer);
+	if (!CheckError(hr, nullptr)) return false;
+
+	hr = d3d11Device->CreateDepthStencilView(depthStencilBuffer, NULL, &depthStencilView);
 	if (!CheckError(hr, nullptr)) return false;
 
 	return true;
 }
 
-bool RenderTexture::InitRenderTextureWithDepthStencil(ID3D11Device* d3d11Device)
+bool RenderTexture::InitRenderTextureShadowMapPCF(ID3D11Device* d3d11Device)
 {
 	CD3D11_TEXTURE2D_DESC textureDesc;
 	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -279,7 +306,7 @@ bool RenderTexture::InitRenderTextureWithDepthStencil(ID3D11Device* d3d11Device)
 	textureDesc.Height = height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	textureDesc.Format = DXGI_FORMAT_R16_UNORM;// DXGI_FORMAT_R32_FLOAT;
 	textureDesc.SampleDesc.Count = 1;
 	textureDesc.SampleDesc.Quality = 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -313,15 +340,15 @@ bool RenderTexture::InitRenderTextureWithDepthStencil(ID3D11Device* d3d11Device)
 	if (!CheckError(hr, nullptr)) return false;
 
 	///////////////////////////////////////////////////////////////////////////////
-	//sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;//default
-	//sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;//default
-	//sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;//default
+	sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;// D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;//we are using SamplerCmp in shader, so we need the COMPARISON version of filters
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 	//sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;//default
 	//sampDesc.MinLOD = -FLT_MAX;//default
 	//sampDesc.MinLOD = FLT_MAX;//default
 	//sampDesc.MipLODBias = 0.f;//default
 	//sampDesc.MaxAnisotropy = 1;//default
-	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;//default
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;// D3D11_COMPARISON_LESS;
 	//sampDesc.BorderColor[0] = 1.f;//default
 	//sampDesc.BorderColor[1] = 1.f;//default
 	//sampDesc.BorderColor[2] = 1.f;//default
@@ -365,12 +392,7 @@ ID3D11DepthStencilView* RenderTexture::GetDepthStencilView()
 	return depthStencilView;
 }
 
-bool RenderTexture::HasRenderTargetView()
+D3D11_VIEWPORT RenderTexture::GetViewport()
 {
-	return renderTargetView != nullptr;
-}
-
-bool RenderTexture::HasDepthStencilView()
-{
-	return depthStencilView != nullptr;
+	return viewport;
 }

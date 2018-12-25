@@ -19,7 +19,6 @@ public:
 	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat);
 	void Draw(ID3D11DeviceContext* d3d11DevCon, Material* _pMat, FrameUniform* _pFrameUniform);
 	bool InitDrawable(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
-	bool IsInitiated();
 	void ConnectObjectUniformRead(ObjectUniform *_pObjectUniform);
 	void ConnectFrameUniformRead(FrameUniform *_pFrameUniform);
 	void ConnectSceneUniformRead(SceneUniform *_pSceneUniform);
@@ -36,6 +35,5 @@ private:
 	void SetVertexIndexBuffer(ID3D11DeviceContext* d3d11DevCon);
 	void UseTriangleList(ID3D11DeviceContext* d3d11DevCon);
 	void UseLineList(ID3D11DeviceContext* d3d11DevCon);
-	bool initiated;
 };
 
