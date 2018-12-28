@@ -5,14 +5,13 @@ VLD3D11 (this project is still in progress)
 
 * Based on GPU Pro 5: Volumetric Light Effects in Killzone: Shadow Fall and [NVDIA Volumetric Lighting Slides](https://developer.nvidia.com/sites/default/files/akamai/gameworks/downloads/papers/NVVL/Fast_Flexible_Physically-Based_Volumetric_Light_Scattering.pdf)
 
-Features
+Current Result
 ======================
 
----
-
-## Current Result
-
 ![](img/vld3d11_control.gif)
+
+Features
+======================
 
 ---
 
