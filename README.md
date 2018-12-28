@@ -8,7 +8,7 @@ VLD3D11 (this project is still in progress)
 Current Result
 ======================
 
-![](img/vld3d11_control.gif)
+![](img/vld3d11_camera.gif)
 
 Features
 ======================
@@ -53,7 +53,7 @@ When rendering the geometry, for each fragment of it, I calculate a ray from the
 
 ---
 
-## III. Volume Light
+## III. Volume Light (w/ PCF Shadow)
 
 ### overview
 
