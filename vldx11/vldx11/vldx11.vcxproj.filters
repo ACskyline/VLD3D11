@@ -19,6 +19,12 @@
     <Filter Include="WICTextureLoader">
       <UniqueIdentifier>{ebfd568c-a1c7-4056-a26b-411d75a1d8df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{62fe1798-f8a7-4264-8985-50dff380838b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{e306f0a7-6e26-4c43-9643-9e2cb2482129}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,6 +77,24 @@
     </ClCompile>
     <ClCompile Include="ObjectUniform.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx11.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,55 +149,76 @@
     <ClInclude Include="ObjectUniform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx11.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="myPixel.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelCubeFog.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myVert.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelSphereFog.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelConeFog.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelTexturePointLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelLambertPointLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelHalfLambertPointLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelLambertDirectionalLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelHalfLambertDirectionalLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelTextureDirectionalLight.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelTexturePointLightShadow.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelShadowPass.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
-    <FxCompile Include="myPixelDebugShadowMap.hlsl">
-      <Filter>Source Files</Filter>
-    </FxCompile>
     <FxCompile Include="myVertUI.hlsl">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="myInclude.hlsli">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixel.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelDebugShadowMap.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelShadowPass.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myVert.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelColor.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myVertColor.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelHalfLambertSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelLambertSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelTextureSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelTextureSpotLightShadow.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelCubeFogSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelConeFogSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="myPixelSphereFogSpotLight.hlsl">
+      <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

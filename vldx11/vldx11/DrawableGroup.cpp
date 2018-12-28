@@ -68,7 +68,7 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 		if (type == DrawableGroupType::VolumeLight)//for volume light
 		{
 			//rasterizerDesc.FillMode = D3D11_FILL_SOLID;//default, but if comment this, create function will return an error but still perform as expected -> using cd3d11 description with default value fix this
-			rasterizerDesc.CullMode = D3D11_CULL_NONE;//rasterizerDesc.CullMode = D3D11_CULL_BACK;//default
+			rasterizerDesc.CullMode = D3D11_CULL_FRONT;//rasterizerDesc.CullMode = D3D11_CULL_BACK;//default
 			//rasterizerDesc.FrontCounterClockwise = FALSE;//default
 			//rasterizerDesc.DepthBias = 0;//default
 			//rasterizerDesc.SlopeScaledDepthBias = 0.0f;//default
@@ -78,7 +78,7 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 			rasterizerDesc.MultisampleEnable = TRUE;
 			//rasterizerDesc.AntialiasedLineEnable = FALSE;//default
 
-			//depthStencilDesc.DepthEnable = TRUE;//default
+			depthStencilDesc.DepthEnable = FALSE;//depthStencilDesc.DepthEnable = TRUE;//default
 			depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 			//depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;//default
 			//depthStencilDesc.StencilEnable = FALSE;//default
@@ -142,7 +142,7 @@ bool DrawableGroup::InitDrawableGroup(ID3D11Device* d3d11Device)
 			//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;//default
 			//blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;//default
 		}
-		if (type == DrawableGroupType::UI)//for UI
+		if (type == DrawableGroupType::Debug)//for Debug
 		{
 			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 			rasterizerDesc.CullMode = D3D11_CULL_NONE;

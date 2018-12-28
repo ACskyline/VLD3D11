@@ -29,6 +29,11 @@ float Light::GetRadius()
 	return 0;
 }
 
+float Light::GetAngle()
+{
+	return 0;
+}
+
 void Light::SetCol(XMFLOAT4 _col)
 {
 	col = _col;
@@ -49,9 +54,14 @@ void Light::SetRadius(float _radius)
 	//do nothing
 }
 
+void Light::SetAngle(float _angle)
+{
+	//do nothing
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
-PointLight::PointLight(XMFLOAT3 _pos, XMFLOAT4 _col, float _radius) : 
+PointLight::PointLight(XMFLOAT4 _col, XMFLOAT3 _pos, float _radius) : 
 	Light(Light::LightType::Point, _col), pos(_pos), radius(_radius)
 {
 }
@@ -82,7 +92,7 @@ void PointLight::SetRadius(float _radius)
 
 ///////////////////////////////////////////////////////////////////////////
 
-DirectionalLight::DirectionalLight(XMFLOAT3 _dir, XMFLOAT4 _col) :
+DirectionalLight::DirectionalLight(XMFLOAT4 _col, XMFLOAT3 _dir) :
 	Light(Light::LightType::Directional, _col), dir(_dir)
 {
 }
@@ -101,3 +111,58 @@ void DirectionalLight::SetDir(XMFLOAT3 _dir)
 	dir = _dir;
 }
 
+
+///////////////////////////////////////////////////////////////////////////
+
+SpotLight::SpotLight(XMFLOAT4 _col, XMFLOAT3 _pos, XMFLOAT3 _dir, float _radius, float _angle) :
+	Light(Light::LightType::Spot, _col), 
+	pos(_pos),
+	dir(_dir), 
+	radius(_radius), 
+	angle(_angle)
+{
+}
+
+SpotLight::~SpotLight()
+{
+}
+
+XMFLOAT3 SpotLight::GetPos()
+{
+	return pos;
+}
+
+XMFLOAT3 SpotLight::GetDir()
+{
+	return dir;
+}
+
+float SpotLight::GetRadius()
+{
+	return radius;
+}
+
+float SpotLight::GetAngle()
+{
+	return angle;
+}
+
+void SpotLight::SetPos(XMFLOAT3 _pos)
+{
+	pos = _pos;
+}
+
+void SpotLight::SetDir(XMFLOAT3 _dir)
+{
+	dir = _dir;
+}
+
+void SpotLight::SetRadius(float _radius)
+{
+	radius = _radius;
+}
+
+void SpotLight::SetAngle(float _angle)
+{
+	angle = _angle;
+}

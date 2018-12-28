@@ -4,45 +4,59 @@
 #define EPSILON 0.0000001
 #define SHADOW_BIAS 0.00001
 
+#define OUT_OF_FRUSTUM 0
+#define OUT_OF_FRUSTUM 0
+
 cbuffer ObjectUniform : register(b0)
 {
 	float4x4 M;
 	float4x4 M_INV;
     float4x4 M_INV_TRANS;
-	float4 COL_OBJECT;
 };
 
 cbuffer FrameUniform : register(b1)
 {
     float4x4 V;
+    float4x4 V_INV;
     float4x4 P;
+    float4x4 P_INV;
 	float4x4 VP;
 	float4x4 VP_INV;
     float4x4 V_SHADOW;
+    float4x4 V_SHADOW_INV;
     float4x4 P_SHADOW;
+    float4x4 P_SHADOW_INV;
     float4x4 VP_SHADOW;
     float4x4 VP_INV_SHADOW;
-	float4 COL_FRAME;
 	float3 CAMERA_POS;
 	float INTENSITY;
     float3 CAMERA_POS_SHADOW;
 	uint FRAME_NUM;
+    float2 TEXTURE_SIZE;
 };
 
 cbuffer SceneUniform : register(b2)
 {
 	float4 LIGHT_COL;
-	float3 LIGHT_POS;
+	float3 LIGHT_POS;//point light, spot light
 	uint STEP;
-	float3 LIGHT_DIR;
+	float3 LIGHT_DIR;//directional light, spot light
 	float FAR_CLIP;
+    float3 VOLUME_COL;
     float LIGHT_RADIUS;
+    float3 VOLUME_NOISE_SIZE;
+    float LIGHT_ANGLE;//spot light
+    float3 VOLUME_NOISE_VEL;
+    float VOLUME_G;
+    float2 SCREEN_SIZE;
+    float VOLUME_NOISE_SCALE;
+    float TIME_SCALE;
+    float NEAR_CLIP;
 };
 
 struct a2v
 {
 	float3 pos : MYPOSITION;
-	float4 col : MYCOLOR;
 	float3 nor : MYNORMAL;
 	float2 uv : MYUV;
 };
@@ -50,11 +64,28 @@ struct a2v
 struct v2f
 {
 	float4 pos : SV_POSITION;
-	float4 color : COLOR;
 	float2 uv : TEXCOORD0;
 	float3 posW : TEXCOORD1;
 	float3 norW : TEXCOORD2;
     float3 posEye : TEXCOORD3;
+};
+
+struct a2v_COLOR
+{
+    float3 pos : MYPOSITION;
+    float4 col : MYCOLOR;
+    float3 nor : MYNORMAL;
+    float2 uv : MYUV;
+};
+
+struct v2f_COLOR
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    float3 posW : TEXCOORD1;
+    float3 norW : TEXCOORD2;
+    float3 posEye : TEXCOORD3;
+    float4 col : TEXCOORD4;
 };
 
 Texture2D MainTexture : register(t0);
@@ -66,40 +97,142 @@ SamplerState SamplerShadowMap : register(s1);
 Texture2D ShadowMapPCF : register(t2);//This is empty because we are only rendering to ShadowMap. 
 SamplerComparisonState SamplerShadowMapPCF : register(s2);//We only need this to use PCF
 
+Texture2D ScreenDepth : register(t3);
+SamplerState SamplerScreenDepth : register(s3);
+
+Texture2D ScreenDepthPCF : register(t4); //This is empty because we are only rendering to ShadowMap. 
+SamplerComparisonState SamplerScreenDepthPCF : register(s4); //We only need this to use PCF
+
+float ScreenDepthToEyeDepth(float screenDepth)
+{
+    return (FAR_CLIP * NEAR_CLIP) / (FAR_CLIP - screenDepth * (FAR_CLIP - NEAR_CLIP));
+}
+
 float2 FlipV(float2 uv)
 {
     return float2(uv.x, 1-uv.y);
 }
 
-float Shadow(float3 wpos)
+bool InFrustum(float4x4 vp, float3 wpos)
 {
-    float3 eyePos = mul(V_SHADOW, float4(wpos, 1.0f)).xyz;
+    float4 cpos = mul(vp, float4(wpos, 1.0f));
+    if (cpos.w < 0 || cpos.z < 0 || cpos.z > cpos.w || cpos.x > cpos.w || cpos.x < -cpos.w || cpos.y > cpos.w || cpos.y < -cpos.w)
+        return false;
+    else
+        return true;
+}
+
+//assuming in frustum
+float ShadowMultiTap(float3 wpos, int sqrtTap)
+{
     float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
-    //frustum culling
-    if (cpos.z < 0 || cpos.z > cpos.w || cpos.x > cpos.w || cpos.x < -cpos.w || cpos.y > cpos.w || cpos.y < -cpos.w)
-        return 1.0;
     float3 ppos = cpos.xyz / cpos.w;
     float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
-    float depth = ppos.z;//eyePos.z; //
+    float depth = ppos.z;
+    float depthShadowMap = 0;
+    int absOffsetMax = sqrtTap / 2;
+    for (int i = -absOffsetMax; i <= absOffsetMax; i++)
+    {
+        for (int j = -absOffsetMax; j <= absOffsetMax; j++)
+        {
+            float2 currentUV = uv + float2(i, j) / TEXTURE_SIZE;
+            depthShadowMap += ShadowMap.SampleCmpLevelZero(SamplerShadowMapPCF, FlipV(currentUV), depth - SHADOW_BIAS).r;
+        }
+    }
+    depthShadowMap /= (absOffsetMax * 2.0 + 1.0) * (absOffsetMax * 2.0 + 1.0);
+    return depthShadowMap;
+}
+
+//assuming in frustum
+float Shadow(float3 wpos)
+{
+    float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
+    float3 ppos = cpos.xyz / cpos.w;
+    float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
+    float depth = ppos.z;
     float depthShadowMap = ShadowMap.SampleCmpLevelZero(SamplerShadowMapPCF, FlipV(uv), depth - SHADOW_BIAS).r;
     return depthShadowMap;
 }
 
+//assuming in frustum
 bool InShadow(float3 wpos)
 {
-    float3 eyePos = mul(V_SHADOW, float4(wpos, 1.0f)).xyz;
     float4 cpos = mul(VP_SHADOW, float4(wpos, 1.0f));
-    //frustum culling
-    if (cpos.z < 0 || cpos.z > cpos.w || cpos.x > cpos.w || cpos.x < -cpos.w || cpos.y > cpos.w || cpos.y < -cpos.w)
-        return false;
     float3 ppos = cpos.xyz / cpos.w;
     float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
     float depthShadowMap = ShadowMap.SampleLevel(SamplerShadowMap, FlipV(uv), 0).r;
-    float depth = ppos.z;//eyePos.z; //
+    float depth = ppos.z;
     if (depth > depthShadowMap + SHADOW_BIAS)
         return true;
     else
         return false;
+}
+
+//assuming in frustum
+//can be optimized by using SV_Position.xy to get uv
+float SampleScreenDepth(float3 wpos)
+{
+    float4 cpos = mul(VP, float4(wpos, 1.0f));
+    float3 ppos = cpos.xyz / cpos.w;
+    float2 uv = (ppos.xy + float2(1.0, 1.0)) * 0.5;
+    float screenDepth = ScreenDepth.SampleLevel(SamplerScreenDepth, FlipV(uv), 0).r;
+    return screenDepth;
+}
+
+float SampleScreenDepth(float2 spos)
+{
+    float2 uv = spos / SCREEN_SIZE;//no need to flip because it's in screen space
+    float screenDepth = ScreenDepth.SampleLevel(SamplerScreenDepth, uv, 0).r;
+    return screenDepth;
+}
+
+bool OccludeVolume(in float3 posW, inout float3 start, inout float3 finish)
+{
+    //handle occlusion begin
+    float3 startEye = mul(V, float4(start, 1)).xyz;
+    float3 finishEye = mul(V, float4(finish, 1)).xyz;
+    float screenDepth = SampleScreenDepth(posW);
+    float eyeDepth = ScreenDepthToEyeDepth(screenDepth);
+    
+    if (eyeDepth < startEye.z)//occluded, we disabled depth test for volume, so we need to do it manually
+        return true;
+    else //not occluded
+        finishEye.z = min(finishEye.z, eyeDepth);
+
+    start = mul(V_INV, float4(startEye, 1)).xyz;
+    finish = mul(V_INV, float4(finishEye, 1)).xyz;
+    //handle occlusion end
+
+    return false;
+}
+
+bool OccludeVolume(in float2 spos, inout float3 start, inout float3 finish)
+{
+    //handle occlusion begin
+    float3 startEye = mul(V, float4(start, 1)).xyz;
+    float3 finishEye = mul(V, float4(finish, 1)).xyz;
+    float screenDepth = SampleScreenDepth(spos);
+    float eyeDepth = ScreenDepthToEyeDepth(screenDepth);
+    
+    if (eyeDepth < startEye.z)//occluded, we disabled depth test for volume, so we need to do it manually
+        return true;
+    else //not occluded
+        finishEye.z = min(finishEye.z, eyeDepth);
+
+    start = mul(V_INV, float4(startEye, 1)).xyz;
+    finish = mul(V_INV, float4(finishEye, 1)).xyz;
+    //handle occlusion end
+
+    return false;
+}
+
+float AttenuateSpotLight(float3 posW)
+{
+    float a = dot(normalize(posW - LIGHT_POS), LIGHT_DIR);
+    float b = cos(radians(LIGHT_ANGLE / 2.0));
+    if (a < 0 || a < b)
+        return 0;
+    return max(0, (1.f - 1.f / LIGHT_RADIUS * length(LIGHT_POS - posW)) * saturate((a - b) / (1.0 - b)));
 }
 
 float AttenuatePointLight(float3 posW)
@@ -174,6 +307,7 @@ bool IntersectCubeFace(in uint face, in float3 ori, in float3 dir, inout float t
 }
 
 //unit cube intersection detection
+//clamp start to camera if camera is inside of the volume
 bool IntersectCube(in float3 ori, in float3 dir, inout float3 start, inout float3 finish)
 {
 	float minT = INFINITE_MAX;
@@ -203,7 +337,7 @@ bool IntersectCube(in float3 ori, in float3 dir, inout float3 start, inout float
 	{
 		if (maxT >= 0)
 		{
-			minT = max(0, minT);
+            minT = max(0, minT); //clamp start to camera if camera is inside of the volume
 			start = ori + minT * dir;
 			finish = ori + maxT * dir;
 			result = true;
@@ -214,6 +348,7 @@ bool IntersectCube(in float3 ori, in float3 dir, inout float3 start, inout float
 }
 
 //unit sphere intersection detection
+//clamp start to camera if camera is inside of the volume
 bool IntersectSphere(in float3 ori, in float3 dir, inout float3 start, inout float3 finish)
 {
 	bool result = false;
@@ -234,7 +369,7 @@ bool IntersectSphere(in float3 ori, in float3 dir, inout float3 start, inout flo
 
 		if (tMax >= 0)
 		{
-			tMin = max(0, tMin);
+            tMin = max(0, tMin); //clamp start to camera if camera is inside of the volume
 
 			start = ori + tMin * dir;
 			finish = ori + tMax * dir;
@@ -265,6 +400,7 @@ bool IntersectConeCircle(in float3 ori, in float3 dir, inout float t)
 }
 
 //unit cone intersection detection(tip at (0,0.5,0), radius is 0.5, height is 1)
+//clamp start to camera if camera is inside of the volume
 bool IntersectCone(in float3 ori, in float3 dir, inout float3 start, inout float3 finish)
 {
 	bool result = false;
@@ -304,7 +440,7 @@ bool IntersectCone(in float3 ori, in float3 dir, inout float3 start, inout float
 
 		if (tMax >= 0)
 		{
-			tMin = max(0, tMin);
+            tMin = max(0, tMin); //clamp start to camera if camera is inside of the volume
 			start = ori + tMin * dir;
 			finish = ori + tMax * dir;
 			result = true;

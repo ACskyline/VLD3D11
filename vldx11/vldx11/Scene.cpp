@@ -73,7 +73,7 @@ bool Scene::InitScene(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCo
 
 void Scene::UpdateSceneAll(ID3D11DeviceContext* d3d11DevCon)
 {
-	//update all object and set needToUpdate flag. this is expensive.
+	//update all objects and set needToUpdate flag on connected uniforms. this is expensive.
 	for (auto item = pObjectVec.begin(); item != pObjectVec.end(); item++)
 	{
 		(*item)->UpdateObject();
@@ -82,24 +82,30 @@ void Scene::UpdateSceneAll(ID3D11DeviceContext* d3d11DevCon)
 	//upload to GPU
 	for (auto item = pObjectUniformVec.begin(); item != pObjectUniformVec.end(); item++)
 	{
-		if((*item)->NeedToUpload()) (*item)->ObjectUniformBufferData(d3d11DevCon);
+		(*item)->ObjectUniformBufferData(d3d11DevCon);
 	}
 
 	//upload to GPU
 	for (auto item = pFrameUniformVec.begin(); item != pFrameUniformVec.end(); item++)
 	{
-		if ((*item)->NeedToUpload()) (*item)->FrameUniformBufferData(d3d11DevCon);
+		(*item)->FrameUniformBufferData(d3d11DevCon);
 	}
 
 	//upload to GPU
 	for (auto item = pSceneUniformVec.begin(); item != pSceneUniformVec.end(); item++)
 	{
-		if ((*item)->NeedToUpload()) (*item)->SceneUniformBufferData(d3d11DevCon);
+		(*item)->SceneUniformBufferData(d3d11DevCon);
 	}
 }
 
 void Scene::UpdateSceneCheck(ID3D11DeviceContext* d3d11DevCon)
 {
+	//update flagged object and set needToUpdate flag on connected uniforms.
+	for (auto item = pObjectVec.begin(); item != pObjectVec.end(); item++)
+	{
+		if((*item)->NeedToUpdate()) (*item)->UpdateObject();
+	}
+
 	//upload to GPU
 	for (auto item = pObjectUniformVec.begin(); item != pObjectUniformVec.end(); item++)
 	{

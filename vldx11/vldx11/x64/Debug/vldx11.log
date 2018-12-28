@@ -1,48 +1,31 @@
-﻿  Drawable.cpp
+﻿  main.cpp
   c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-  DrawableGroup.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-  Material.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-  Object.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-  Renderer.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-e:\projects\visual_studio_projects\vldx11\vldx11\renderer.cpp(155): warning C4244: '=': conversion from 'const int' to 'FLOAT', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\renderer.cpp(156): warning C4244: '=': conversion from 'const int' to 'FLOAT', possible loss of data
-  Scene.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-  Texture.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-e:\projects\visual_studio_projects\vldx11\vldx11\texture.cpp(96): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\texture.cpp(97): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
-  main.cpp
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(380): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(385): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(390): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(395): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(400): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(405): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(412): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(417): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(422): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(427): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(432): warning C4305: '-=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(437): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(446): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(451): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(456): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(464): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(469): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(474): warning C4305: '+=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(483): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(488): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(489): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(490): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(495): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(496): warning C4305: '=': truncation from 'double' to 'float'
-e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(549): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
-  Generating Code...
-e:\projects\visual_studio_projects\vldx11\vldx11\renderer.cpp(104): warning C4715: 'Renderer::InitDefaultRenderTargetView': not all control paths return a value
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(337): warning C4305: 'argument': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(340): warning C4305: 'argument': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(341): warning C4305: 'argument': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(571): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(576): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(581): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(586): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(591): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(596): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(602): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(607): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(612): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(617): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(622): warning C4305: '-=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(627): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(649): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(654): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(659): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(667): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(672): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(677): warning C4305: '+=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(685): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(690): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(691): warning C4305: '=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(692): warning C4305: '=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(697): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(698): warning C4305: '=': truncation from 'double' to 'float'
+e:\projects\visual_studio_projects\vldx11\vldx11\main.cpp(763): warning C4244: 'return': conversion from 'WPARAM' to 'int', possible loss of data
   vldx11.vcxproj -> E:\Projects\Visual_Studio_Projects\vldx11\x64\Debug\vldx11.exe

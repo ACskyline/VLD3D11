@@ -53,42 +53,6 @@ void FrameUniform::SetFrameUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon)
 	SetFrameUniformBufferPS(d3d11DevCon);
 }
 
-void FrameUniform::SetVP(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.VP, temp);
-}
-
-void FrameUniform::SetVP_INV(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.VP, temp);
-	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
-}
-
-void FrameUniform::SetP_VP_INV(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.P, tempP);
-	XMStoreFloat4x4(&frameUniformData.VP, temp);
-	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
-}
-
 void FrameUniform::SetV_P_VP_INV(Camera* pCamera, const XMMATRIX& transform)
 {
 	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
@@ -98,45 +62,11 @@ void FrameUniform::SetV_P_VP_INV(Camera* pCamera, const XMMATRIX& transform)
 	XMMATRIX temp = tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.V, tempV);
+	XMStoreFloat4x4(&frameUniformData.V_INV, XMMatrixInverse(nullptr, tempV));
 	XMStoreFloat4x4(&frameUniformData.P, tempP);
+	XMStoreFloat4x4(&frameUniformData.P_INV, XMMatrixInverse(nullptr, tempP));
 	XMStoreFloat4x4(&frameUniformData.VP, temp);
 	XMStoreFloat4x4(&frameUniformData.VP_INV, XMMatrixInverse(nullptr, temp));
-}
-
-void FrameUniform::SetVP_Shadow(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
-}
-
-void FrameUniform::SetVP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
-	XMStoreFloat4x4(&frameUniformData.VP_INV_SHADOW, XMMatrixInverse(nullptr, temp));
-}
-
-void FrameUniform::SetP_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform)
-{
-	XMMATRIX tempV = XMMatrixInverse(nullptr, transform) * pCamera->GetViewMatrix();
-
-	XMMATRIX tempP = pCamera->GetProjectionMatrix();
-
-	XMMATRIX temp = tempV * tempP;
-
-	XMStoreFloat4x4(&frameUniformData.P_SHADOW, tempP);
-	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
-	XMStoreFloat4x4(&frameUniformData.VP_INV_SHADOW, XMMatrixInverse(nullptr, temp));
 }
 
 void FrameUniform::SetV_P_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transform)
@@ -148,7 +78,9 @@ void FrameUniform::SetV_P_VP_INV_Shadow(Camera* pCamera, const XMMATRIX& transfo
 	XMMATRIX temp = tempV * tempP;
 
 	XMStoreFloat4x4(&frameUniformData.V_SHADOW, tempV);
+	XMStoreFloat4x4(&frameUniformData.V_SHADOW_INV, XMMatrixInverse(nullptr, tempV));
 	XMStoreFloat4x4(&frameUniformData.P_SHADOW, tempP);
+	XMStoreFloat4x4(&frameUniformData.P_SHADOW_INV, XMMatrixInverse(nullptr, tempP));
 	XMStoreFloat4x4(&frameUniformData.VP_SHADOW, temp);
 	XMStoreFloat4x4(&frameUniformData.VP_INV_SHADOW, XMMatrixInverse(nullptr, temp));
 }
@@ -183,12 +115,6 @@ void FrameUniform::ApplyCameraShadow(Camera* pCamera, Transform* pTransform)
 	needToUpload = true;
 }
 
-void FrameUniform::ApplyCol(float r, float g, float b, float a)
-{
-	frameUniformData.COL = XMFLOAT4(r, g, b, a);
-	needToUpload = true;
-}
-
 void FrameUniform::ApplyIntensity(float intensity)
 {
 	frameUniformData.intensity = intensity;
@@ -199,6 +125,17 @@ void FrameUniform::ApplyFrameNum(uint32_t frameNum)
 {
 	frameUniformData.frameNum = frameNum;
 	needToUpload = true;
+}
+
+void FrameUniform::ApplyTextureSize(int width, int height)
+{
+	frameUniformData.textureSize = XMFLOAT2(width, height);
+	needToUpload = true;
+}
+
+float FrameUniform::GetIntensity()
+{
+	return frameUniformData.intensity;
 }
 
 bool FrameUniform::InitFrameUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)

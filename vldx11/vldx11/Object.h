@@ -27,6 +27,8 @@ public:
 	void ConnectObjectUniformWrite(ObjectUniform *_pObjectUniform);
 	void ConnectFrameUniformWrite(FrameUniform *_pFrameUniform);
 	void ConnectSceneUniformWrite(SceneUniform *_pSceneUniform);
+	bool NeedToUpdate();
+	void SetNeedToUpdate(bool _needToUpdate);
 
 private:
 	Drawable* pDrawable;
@@ -38,5 +40,6 @@ private:
 	ObjectUniform* pObjectUniform;
 	FrameUniform* pFrameUniform;
 	SceneUniform* pSceneUniform;
+	bool needToUpdate;
 };
 

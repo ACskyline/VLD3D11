@@ -1,19 +1,28 @@
 #include "Object.h"
 
-
-
-Object::Object() : 
+Object::Object() :
 	pDrawable(nullptr),
 	pCamera(nullptr),
 	pCameraShadow(nullptr),
 	pLight(nullptr),
 	pTransform(nullptr),
-	pTransformShadow(nullptr)
+	pTransformShadow(nullptr),
+	needToUpdate(false)
 {
 }
 
 Object::~Object()
 {
+}
+
+bool Object::NeedToUpdate()
+{
+	return needToUpdate;
+}
+
+void Object::SetNeedToUpdate(bool _needToUpdate)
+{
+	needToUpdate = _needToUpdate;
 }
 
 //update object and set needToUpdate flag
@@ -44,6 +53,7 @@ void Object::UpdateObject()
 		if(pCamera != nullptr) pSceneUniform->ApplyCamera(pCamera, pTransform);
 		if(pLight != nullptr) pSceneUniform->ApplyLight(pLight, pTransform);
 	}
+	needToUpdate = false;
 }
 
 void Object::DrawObject(ID3D11DeviceContext *d3d11DevCon)

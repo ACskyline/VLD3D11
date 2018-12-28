@@ -83,12 +83,6 @@ void ObjectUniform::ApplyTransform(Transform* pTransform)
 	needToUpload = true;
 }
 
-void ObjectUniform::ApplyCol(float r, float g, float b, float a)
-{
-	objectUniformData.COL = XMFLOAT4(r, g, b, a);
-	needToUpload = true;
-}
-
 bool ObjectUniform::InitObjectUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon)
 {
 	if (!CreateBuffer(d3d11Device)) return false;

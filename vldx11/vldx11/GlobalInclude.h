@@ -25,7 +25,7 @@
 #define MY_DELETE_ARRAY(ptr) if(ptr!=nullptr){ delete [] ptr; ptr = nullptr;}
 
 enum UNIFORM_SLOT { OBJECT, FRAME, SCENE };
-enum TEXTURE_SLOT { MAIN, SHADOW, SHADOW_PCF, COUNT };
+enum TEXTURE_SLOT { MAIN, SHADOW, SHADOW_PCF, SCREEN_DEPTH, SCREEN_DEPTH_PCF, COUNT };
 
 #define KEYDOWN(name, key) ((name)[(key)] & 0x80)
 

@@ -13,7 +13,6 @@ v2f main(a2v IN)
     // a * M * V * P = ((VP)^T * M^T * a)
 
     o.pos = mul(mul(VP, M), float4(IN.pos, 1.0f));
-    o.color = IN.col * COL_OBJECT * COL_FRAME;
     o.posW = mul(M, float4(IN.pos, 1.0f)).xyz;
     o.posEye = mul(mul(V, M), float4(IN.pos, 1.0f)).xyz;
 

@@ -52,10 +52,36 @@ When rendering the geometry, for each fragment of it, I calculate a ray from the
 
 ### overview
 
-In progress
+|           cube          |           sphere          |           cone          | 
+|:-----------------------:|:-------------------------:|:-----------------------:|
+|![](img/vld3d11_cube.gif)|![](img/vld3d11_sphere.JPG)|![](img/vld3d11_cone.JPG)|
+
+|      camera movement      |       light movement       | 
+|:---------------------  --:|:--------------------------:|
+|![](img/vld3d11_camera.gif)|![](img/vld3d11_control.gif)|
 
 ### details
 
-In progress
+To make sure the volume will be rendered when the camera is inside of it, the culling mode is set to cull front face. To make sure the volume will be rendered when a object is inside of it, the depth test is disabled (as well as depth write). To get the correct enter and exit position of the ray intersecting the volume, (so that ray marching accumalates the correct amount of energy) the screen space depth is used to clamp the exit position and the camera position is used to clamp the enter position. 
 
 ---
+
+### IV. What's Next?
+
+- [ ] Dither Pattern
+
+- [ ] Full Screen Volume (Quad)
+
+- [ ] Other Light Types
+
+  - [ ] Directional Light
+
+  - [ ] Point Light
+
+- [ ] Other Shadow Techniques
+
+  - [ ] Variance Shadow Map
+
+  - [ ] Percentage Close Soft Shadow
+
+  - [ ] Adaptive Shadow Frustum

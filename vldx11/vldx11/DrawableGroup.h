@@ -6,7 +6,7 @@
 class DrawableGroup
 {
 public:
-	enum DrawableGroupType { VolumeLight, Gizmo, Standard, UI };
+	enum DrawableGroupType { VolumeLight, Gizmo, Standard, Debug };
 
 	DrawableGroup(DrawableGroupType _type);
 	~DrawableGroup();

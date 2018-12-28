@@ -9,12 +9,10 @@ class ObjectUniform
 		XMFLOAT4X4 M;
 		XMFLOAT4X4 M_INV;
 		XMFLOAT4X4 M_INV_TRANS;
-		XMFLOAT4 COL;
 		ObjectUniformData() :
 			M(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
 			M_INV(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
-			M_INV_TRANS(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
-			COL(XMFLOAT4(1, 1, 1, 1))
+			M_INV_TRANS(XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1))
 		{}
 	};
 
@@ -28,7 +26,6 @@ public:
 	void SetObjectUniformBufferPS(ID3D11DeviceContext* d3d11DevCon);
 	void SetObjectUniformBufferVSPS(ID3D11DeviceContext* d3d11DevCon);
 	void ApplyTransform(Transform* pTransform);
-	void ApplyCol(float r, float g, float b, float a);
 	bool InitObjectUniform(ID3D11Device* d3d11Device, ID3D11DeviceContext* d3d11DevCon);
 	bool NeedToUpload();
 

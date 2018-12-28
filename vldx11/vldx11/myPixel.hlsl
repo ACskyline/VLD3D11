@@ -2,5 +2,5 @@
 
 float4 main(v2f IN) : SV_TARGET
 {
-	return IN.color;
+    return float4(0, 1, 0, 1);
 }

@@ -126,6 +126,12 @@
     <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="DrawableGroup.cpp" />
     <ClCompile Include="FrameUniform.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -148,6 +154,14 @@
     <ClInclude Include="DrawableGroup.h" />
     <ClInclude Include="FrameUniform.h" />
     <ClInclude Include="GlobalInclude.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
@@ -173,38 +187,31 @@
     <FxCompile Include="myPixel.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelConeFog.hlsl">
+    <FxCompile Include="myPixelConeFogSpotLight.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelCubeFog.hlsl">
+    <FxCompile Include="myPixelCubeFogSpotLight.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelHalfLambertDirectionalLight.hlsl">
+    <FxCompile Include="myPixelColor.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelHalfLambertPointLight.hlsl">
+    <FxCompile Include="myPixelHalfLambertSpotLight.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelLambertDirectionalLight.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="myPixelLambertPointLight.hlsl">
+    <FxCompile Include="myPixelLambertSpotLight.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
@@ -215,21 +222,14 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelSphereFog.hlsl">
+    <FxCompile Include="myPixelSphereFogSpotLight.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelTextureDirectionalLight.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="myPixelTexturePointLight.hlsl">
+    <FxCompile Include="myPixelTextureSpotLight.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
@@ -240,7 +240,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="myPixelTexturePointLightShadow.hlsl">
+    <FxCompile Include="myPixelTextureSpotLightShadow.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
@@ -262,6 +262,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="myVert.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="myVertColor.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="myVertUI.hlsl">

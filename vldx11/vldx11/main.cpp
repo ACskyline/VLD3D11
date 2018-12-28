@@ -1,8 +1,18 @@
 #include "Renderer.h"
 #include "Object.h"
 #include "Scene.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
 
 D3D11_INPUT_ELEMENT_DESC layout[] =
+{
+	{ "MYPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "MYNORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{ "MYUV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+};
+
+D3D11_INPUT_ELEMENT_DESC layoutColor[] =
 {
 	{ "MYPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	{ "MYCOLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -10,45 +20,57 @@ D3D11_INPUT_ELEMENT_DESC layout[] =
 	{ "MYUV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 };
 
-LPCTSTR WndClassName = "firstwindow";
+//window stuff
+LPCTSTR WndClassName = "vldx11";
 HWND hwnd = NULL;
-
 IDirectInputDevice8* DIKeyboard;
 IDirectInputDevice8* DIMouse;
 DIMOUSESTATE mouseLastState;
 BYTE keyboardLastState[256];
 LPDIRECTINPUT8 DirectInput;
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+//mystuff
+const uint32_t WIDTH = 1024;
+const uint32_t HEIGHT = 768;
 const uint32_t WIDTH_LIGHT = 1024;
 const uint32_t HEIGHT_LIGHT = 1024;
 XMVECTORF32 ClearColor = {0.f, 0.f, 0.f, 1.f};// { 0.3f, 0.3f, 0.8f, 1.f };
+//imgui stuff
+bool mouseAcquired = false;
+float deltaTime = 0.f;
+float fanAngularVel = 60.f;
 
 //renderer
 Renderer mRenderer(WIDTH, HEIGHT, ClearColor, 1.f, 0);
 
 //data
+//ConeMesh mMeshVolume(32);
 CubeMesh mMeshVolume;
+//SphereMesh mMeshVolume(16, 16);
 AxisMesh mMeshAxis;
 GridMesh mMeshGrid(50);
 PlaneMesh mMeshDebugShadowMap;
-ObjMesh mMeshFan(L"CoolingFan.obj");
+ObjMesh mMeshFanBlade(L"fan_blade.obj");
+ObjMesh mMeshFanBase(L"fan_base.obj");
 PlaneMesh mMeshFloor;
-Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFog.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialFan(L"myVert.hlsl", L"myPixelHalfLambertPointLight.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialGizmo(L"myVert.hlsl", L"myPixel.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialVolume(L"myVert.hlsl", L"myPixelConeFogSpotLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialVolume(L"myVert.hlsl", L"myPixelCubeFogSpotLight.hlsl", layout, ARRAYSIZE(layout));
+//Material mMaterialVolume(L"myVert.hlsl", L"myPixelSphereFogSpotLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialFan(L"myVert.hlsl", L"myPixelHalfLambertSpotLight.hlsl", layout, ARRAYSIZE(layout));
+Material mMaterialGizmo(L"myVertColor.hlsl", L"myPixelColor.hlsl", layoutColor, ARRAYSIZE(layoutColor));
 Material mMaterialDebugShadowMap(L"myVertUI.hlsl", L"myPixelDebugShadowMap.hlsl", layout, ARRAYSIZE(layout));
 Material mMaterialShadowPass(L"myVert.hlsl", L"myPixelShadowPass.hlsl", layout, ARRAYSIZE(layout));
-Material mMaterialStandard(L"myVert.hlsl", L"myPixelTexturePointLightShadow.hlsl", layout, ARRAYSIZE(layout));
-Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(10, 10, 10));
+Material mMaterialStandard(L"myVert.hlsl", L"myPixelTextureSpotLightShadow.hlsl", layout, ARRAYSIZE(layout));
+Transform mTransformVolume(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(30, 30, 30));
 Transform mTransformAxis(XMFLOAT3(0, 20, 0), XMFLOAT3(90, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformGrid(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
 Transform mTransformDebugShadowMap(XMFLOAT3(-0.75f, 0.75f, 0.1f), XMFLOAT3(-90, 0, 0), XMFLOAT3(0.5, 1, 0.5));
-Transform mTransformFan(XMFLOAT3(0, 10, 0), XMFLOAT3(90, 0, 0), XMFLOAT3(3, 3, 3));
+Transform mTransformFanBase(XMFLOAT3(0, 10, 0), XMFLOAT3(90, 0, 0), XMFLOAT3(3, 3, 3));
+Transform mTransformFanBlade(XMFLOAT3(0, 10, 0), XMFLOAT3(90, 0, 0), XMFLOAT3(3, 3, 3));
 Transform mTransformFloor(XMFLOAT3(0, -10, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(50, 50, 50));
 OrbitCamera mCamera(Camera::CameraType::Perspective, 10.0f, 0.0f, 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH / (float)HEIGHT, 0.1f, 100.0f, 0, 0);
 Camera mCameraLight(Camera::CameraType::Perspective, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 10.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), 90, WIDTH_LIGHT / (float)HEIGHT_LIGHT, 0.1f, 100.0f, 0, 0);
-PointLight mLight(XMFLOAT3(0, 0, 0), XMFLOAT4(1, 1, 1, 1), 50);
+//PointLight mLight(XMFLOAT4(1, 1, 1, 1), XMFLOAT3(0, 0, 0), 50);
+SpotLight mLight(XMFLOAT4(1, 1, 1, 1), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 1), 50, 90);
 Texture mTex(Texture::TextureType::Default, L"checkerboard.jpg");
 RenderTexture mRTexLightDepth(RenderTexture::RenderTextureType::ShadowMap, WIDTH_LIGHT, HEIGHT_LIGHT);
 RenderTexture mRTexLightDepthPCF(RenderTexture::RenderTextureType::ShadowMapPCF, WIDTH_LIGHT, HEIGHT_LIGHT);
@@ -58,7 +80,8 @@ ObjectUniform mObjUniVolume;
 ObjectUniform mObjUniAxis;
 ObjectUniform mObjUniGrid;
 ObjectUniform mObjUniDebugShadowMap;
-ObjectUniform mObjUniFan;
+ObjectUniform mObjUniFanBase;
+ObjectUniform mObjUniFanBlade;
 ObjectUniform mObjUniFloor;
 FrameUniform mFrameUniform;
 FrameUniform mFrameUniformLight;
@@ -71,18 +94,20 @@ Object objLight;
 Object objCamera;
 Object objGrid;
 Object objDebugShadowMap;
-Object objFan;
+Object objFanBase;
+Object objFanBlade;
 Object objFloor; 
 Drawable mDrawableVolume(Drawable::DrawableType::TrianlgeList, &mMeshVolume, &mMaterialVolume);
 Drawable mDrawableAxis(Drawable::DrawableType::LineList, &mMeshAxis, &mMaterialGizmo);
 Drawable mDrawableGrid(Drawable::DrawableType::LineList, &mMeshGrid, &mMaterialGizmo);
 Drawable mDrawableDebugShadowMap(Drawable::DrawableType::TrianlgeList, &mMeshDebugShadowMap, &mMaterialDebugShadowMap);
-Drawable mDrawableFan(Drawable::DrawableType::TrianlgeList, &mMeshFan, &mMaterialFan);
+Drawable mDrawableFanBase(Drawable::DrawableType::TrianlgeList, &mMeshFanBase, &mMaterialFan);
+Drawable mDrawableFanBlade(Drawable::DrawableType::TrianlgeList, &mMeshFanBlade, &mMaterialFan);
 Drawable mDrawableFloor(Drawable::DrawableType::TrianlgeList, &mMeshFloor, &mMaterialStandard);
 DrawableGroup grpDrawableVolume(DrawableGroup::DrawableGroupType::VolumeLight);
 DrawableGroup grpDrawableGizmo(DrawableGroup::DrawableGroupType::Gizmo);
 DrawableGroup grpDrawableStandard(DrawableGroup::DrawableGroupType::Standard);
-DrawableGroup grpDrawableUI(DrawableGroup::DrawableGroupType::UI);
+DrawableGroup grpDrawableDebug(DrawableGroup::DrawableGroupType::Debug);
 vector<DrawableGroup*> GlobalDrawableGrpVecShadowPass;
 vector<DrawableGroup*> GlobalDrawableGrpVec;
 
@@ -94,8 +119,44 @@ void InitConsole()
 	freopen_s(&stream, "CON", "w", stdout);
 }
 
+bool InitGui()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+	// Setup Platform/Renderer bindings
+	if(!ImGui_ImplWin32_Init(hwnd)) return false;
+	if(!ImGui_ImplDX11_Init(mRenderer.d3d11Device, mRenderer.d3d11DevCon)) return false;
+
+	// Setup Style
+	ImGui::StyleColorsClassic();
+
+	// Load Fonts
+	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them. 
+	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple. 
+	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+	// - Read 'misc/fonts/README.txt' for more instructions and details.
+	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+	//io.Fonts->AddFontDefault();
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+	//IM_ASSERT(font != NULL);
+
+	return true;
+}
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+		return true;
+
 	switch (msg)
 	{
 
@@ -186,7 +247,8 @@ bool CreateScene()
 	mScene.AddMesh(&mMeshVolume);
 	mScene.AddMesh(&mMeshAxis);
 	mScene.AddMesh(&mMeshDebugShadowMap);
-	mScene.AddMesh(&mMeshFan);
+	mScene.AddMesh(&mMeshFanBase);
+	mScene.AddMesh(&mMeshFanBlade);
 	mScene.AddMesh(&mMeshFloor);
 	mScene.AddMesh(&mMeshGrid);
 
@@ -196,6 +258,8 @@ bool CreateScene()
 	mMaterialDebugShadowMap.SetTexture(TEXTURE_SLOT::SHADOW_PCF, &mRTexScreenDepthPCF); //&mRTexScreenDepthPCF);
 	mMaterialVolume.SetTexture(TEXTURE_SLOT::SHADOW, &mRTexLightDepth);
 	mMaterialVolume.SetTexture(TEXTURE_SLOT::SHADOW_PCF, &mRTexLightDepthPCF);
+	mMaterialVolume.SetTexture(TEXTURE_SLOT::SCREEN_DEPTH, &mRTexScreenDepth);
+	mMaterialVolume.SetTexture(TEXTURE_SLOT::SCREEN_DEPTH_PCF, &mRTexScreenDepthPCF);
 	mMaterialStandard.SetTexture(TEXTURE_SLOT::MAIN, &mTex);
 	mMaterialStandard.SetTexture(TEXTURE_SLOT::SHADOW, &mRTexLightDepth);
 	mMaterialStandard.SetTexture(TEXTURE_SLOT::SHADOW_PCF, &mRTexLightDepthPCF);
@@ -227,9 +291,12 @@ bool CreateScene()
 	mDrawableDebugShadowMap.ConnectObjectUniformRead(&mObjUniDebugShadowMap);
 	mDrawableDebugShadowMap.ConnectFrameUniformRead(&mFrameUniform);
 	mDrawableDebugShadowMap.ConnectSceneUniformRead(&mSceneUniform);
-	mDrawableFan.ConnectObjectUniformRead(&mObjUniFan);
-	mDrawableFan.ConnectFrameUniformRead(&mFrameUniform);
-	mDrawableFan.ConnectSceneUniformRead(&mSceneUniform);
+	mDrawableFanBase.ConnectObjectUniformRead(&mObjUniFanBase);
+	mDrawableFanBase.ConnectFrameUniformRead(&mFrameUniform);
+	mDrawableFanBase.ConnectSceneUniformRead(&mSceneUniform);
+	mDrawableFanBlade.ConnectObjectUniformRead(&mObjUniFanBlade);
+	mDrawableFanBlade.ConnectFrameUniformRead(&mFrameUniform);
+	mDrawableFanBlade.ConnectSceneUniformRead(&mSceneUniform);
 	mDrawableFloor.ConnectObjectUniformRead(&mObjUniFloor);
 	mDrawableFloor.ConnectFrameUniformRead(&mFrameUniform);
 	mDrawableFloor.ConnectSceneUniformRead(&mSceneUniform);
@@ -238,7 +305,8 @@ bool CreateScene()
 	mScene.AddDrawable(&mDrawableAxis);
 	mScene.AddDrawable(&mDrawableGrid);
 	mScene.AddDrawable(&mDrawableDebugShadowMap);
-	mScene.AddDrawable(&mDrawableFan);
+	mScene.AddDrawable(&mDrawableFanBase);
+	mScene.AddDrawable(&mDrawableFanBlade);
 	mScene.AddDrawable(&mDrawableFloor);
 
 	//>>>>>III. Drawable Group<<<<<//
@@ -246,28 +314,37 @@ bool CreateScene()
 	grpDrawableVolume.AddDrawable(&mDrawableVolume);
 	grpDrawableGizmo.AddDrawable(&mDrawableAxis);
 	grpDrawableGizmo.AddDrawable(&mDrawableGrid);
-	grpDrawableUI.AddDrawable(&mDrawableDebugShadowMap);
-	grpDrawableStandard.AddDrawable(&mDrawableFan);
+	grpDrawableDebug.AddDrawable(&mDrawableDebugShadowMap);
+	grpDrawableStandard.AddDrawable(&mDrawableFanBase);
+	grpDrawableStandard.AddDrawable(&mDrawableFanBlade);
 	grpDrawableStandard.AddDrawable(&mDrawableFloor);
 	//add drawable group to scene
 	mScene.AddDrawableGroup(&grpDrawableStandard);
 	mScene.AddDrawableGroup(&grpDrawableGizmo);
 	mScene.AddDrawableGroup(&grpDrawableVolume);
-	mScene.AddDrawableGroup(&grpDrawableUI);
+	mScene.AddDrawableGroup(&grpDrawableDebug);
+	//hide gizmo group
+	grpDrawableGizmo.SetEnabled(false);
 
 	//>>>>>IV. Uniform<<<<<//
 	//apply uniform
-	mFrameUniform.ApplyCol(1, 1, 1, 1);
-	mFrameUniform.ApplyIntensity(5.f);
+	mFrameUniform.ApplyIntensity(10.f);
 	mFrameUniform.ApplyFrameNum(mRenderer.frame);
-	mFrameUniformLight.ApplyCol(0, 0, 0, 0);
+	mFrameUniform.ApplyTextureSize(WIDTH_LIGHT, HEIGHT_LIGHT);
 	mFrameUniformLight.ApplyIntensity(0.f);
 	mFrameUniformLight.ApplyFrameNum(mRenderer.frame);
-	mSceneUniform.ApplyStep(50);
+	mSceneUniform.ApplyStep(32);
+	mSceneUniform.ApplyVolumeG(0.8);
+	mSceneUniform.ApplyVolumeNoiseScale(0.5);
+	mSceneUniform.ApplyVolumeNoiseSize(XMFLOAT3(0.5, 0.5, 0.5));
+	mSceneUniform.ApplyVolumeNoiseVel(XMFLOAT3(0.05, 0.05, 0.05));
+	mSceneUniform.ApplyTimeScale(0.05);
+	mSceneUniform.ApplyScreenSize(WIDTH, HEIGHT);
 	//add uniform to scene
 	mScene.AddObjectUniform(&mObjUniAxis);
 	mScene.AddObjectUniform(&mObjUniDebugShadowMap);
-	mScene.AddObjectUniform(&mObjUniFan);
+	mScene.AddObjectUniform(&mObjUniFanBase);
+	mScene.AddObjectUniform(&mObjUniFanBlade);
 	mScene.AddObjectUniform(&mObjUniFloor);
 	mScene.AddObjectUniform(&mObjUniGrid);
 	mScene.AddObjectUniform(&mObjUniVolume);
@@ -286,9 +363,12 @@ bool CreateScene()
 	objDebugShadowMap.SetTransform(&mTransformDebugShadowMap);
 	objDebugShadowMap.SetDrawable(&mDrawableDebugShadowMap);
 	objDebugShadowMap.ConnectObjectUniformWrite(&mObjUniDebugShadowMap);
-	objFan.SetTransform(&mTransformFan);
-	objFan.SetDrawable(&mDrawableFan);
-	objFan.ConnectObjectUniformWrite(&mObjUniFan);
+	objFanBase.SetTransform(&mTransformFanBase);
+	objFanBase.SetDrawable(&mDrawableFanBase);
+	objFanBase.ConnectObjectUniformWrite(&mObjUniFanBase);
+	objFanBlade.SetTransform(&mTransformFanBlade);
+	objFanBlade.SetDrawable(&mDrawableFanBlade);
+	objFanBlade.ConnectObjectUniformWrite(&mObjUniFanBlade);
 	objFloor.SetTransform(&mTransformFloor);
 	objFloor.SetDrawable(&mDrawableFloor);
 	objFloor.ConnectObjectUniformWrite(&mObjUniFloor);
@@ -307,7 +387,8 @@ bool CreateScene()
 	mScene.AddObject(&objVolume);
 	mScene.AddObject(&objGrid);
 	mScene.AddObject(&objDebugShadowMap);
-	mScene.AddObject(&objFan);
+	mScene.AddObject(&objFanBase);
+	mScene.AddObject(&objFanBlade);
 	mScene.AddObject(&objFloor);
 	mScene.AddObject(&objCamera);
 	mScene.AddObject(&objLight);
@@ -317,7 +398,7 @@ bool CreateScene()
 	GlobalDrawableGrpVec.push_back(&grpDrawableStandard);
 	GlobalDrawableGrpVec.push_back(&grpDrawableVolume);
 	GlobalDrawableGrpVec.push_back(&grpDrawableGizmo);
-	GlobalDrawableGrpVec.push_back(&grpDrawableUI);
+	GlobalDrawableGrpVec.push_back(&grpDrawableDebug);
 	//shadow pass drawable groups
 	GlobalDrawableGrpVecShadowPass.push_back(&grpDrawableStandard);
 
@@ -342,10 +423,6 @@ void DrawScene()
 	mRenderer.ClearCurrentRenderTarget({ 1.f }, 1.f, 0);//since I know this render target is DXGI_FORMAT_R16_FLOAT, I can supply only the red channel
 	mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass, &mFrameUniformLight);
 	//screen shadow pass
-	//TODO: mRTexScreenDepth is not bond to a material which is bond to a drawable, so it is not initialized.
-	//if set it to the render target, it wouldn't do anything. So the render target is still the mRTexLightDepth.
-	//This is why the result is incorrect. The best way to solve this is to utilize the scene class as a way to 
-	//initialize all the data.
 	mRenderer.SetRenderTarget(&mRTexScreenDepth);
 	mRenderer.ClearCurrentRenderTarget({ 1.f }, 1.f, 0);//since I know this render target is DXGI_FORMAT_R16_FLOAT, I can supply only the red channel
 	mRenderer.DrawGroups(GlobalDrawableGrpVecShadowPass, &mMaterialShadowPass, &mFrameUniform);
@@ -353,20 +430,135 @@ void DrawScene()
 	mRenderer.SetDefaultRenderTarget();
 	mRenderer.ClearCurrentRenderTargetDefault();
 	mRenderer.DrawGroups(GlobalDrawableGrpVec);
+}
+
+void DrawGui()
+{
+	static float intensity = mFrameUniform.GetIntensity();
+	static int step = mSceneUniform.GetStep();
+	static bool show_gizmo = grpDrawableGizmo.IsEnabled();
+	static bool show_debug = grpDrawableDebug.IsEnabled();
+	static XMFLOAT4 light_color_v = mLight.GetCol();
+	static float light_color[4] = { light_color_v.x, light_color_v.y, light_color_v.z, light_color_v.w };
+	static float light_radius = mLight.GetRadius();
+	static float light_angle = mLight.GetAngle();
+	static XMFLOAT3 volume_color_v = mSceneUniform.GetVolumeCol();
+	static float volume_color[3] = { volume_color_v.x, volume_color_v.y, volume_color_v.z };
+	static float volume_g = mSceneUniform.GetVolumeG();
+	static float volume_noise_scale = mSceneUniform.GetVolumeNoiseScale();
+	static XMFLOAT3 volume_noise_size_v = mSceneUniform.GetVolumeNoiseSize();
+	static float volume_noise_size[3] = { volume_noise_size_v.x, volume_noise_size_v.y, volume_noise_size_v.z };
+	static float fan_angular_vel = fanAngularVel;
+	static XMFLOAT3 volume_noise_vel_v = mSceneUniform.GetVolumeNoiseVel();
+	static float volume_noise_vel[3] = { volume_noise_vel_v.x, volume_noise_vel_v.y,volume_noise_vel_v.z };
+	static float time_scale = mSceneUniform.GetTimeScale();
+
+	// Start the Dear ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("Control Panel");
+	if (ImGui::Checkbox("Show Gizmo", &show_gizmo))
+	{
+		grpDrawableGizmo.SetEnabled(show_gizmo);
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Show Debug", &show_debug))
+	{
+		grpDrawableDebug.SetEnabled(show_debug);
+	}
+	if (ImGui::SliderFloat("Fan Angular Vel", &fan_angular_vel, 0.0f, 720.0f))
+	{
+		fanAngularVel = fan_angular_vel;
+	}
+	if (ImGui::SliderFloat("Intensity", &intensity, 0.0f, 30.0f))
+	{
+		mFrameUniform.ApplyIntensity(intensity);
+	}
+	if (ImGui::SliderFloat("Time Scale", &time_scale, 0.0f, 0.1f, "%.6f"))
+	{
+		mSceneUniform.ApplyTimeScale(time_scale);
+	}
+	if (ImGui::SliderInt("Step", &step, 0, 100))
+	{
+		mSceneUniform.ApplyStep(step);
+	}
+	if (ImGui::ColorEdit4("Light Color", light_color))
+	{
+		light_color_v = XMFLOAT4(light_color);
+		mLight.SetCol(light_color_v);
+		objLight.SetNeedToUpdate(true);
+	}
+	if (ImGui::SliderFloat("Light Radius", &light_radius, 0.0f, 100.0f))
+	{
+		mLight.SetRadius(light_radius);
+		objLight.SetNeedToUpdate(true);
+	}
+	if (ImGui::SliderFloat("Light Angle", &light_angle, 0.0f, 180.0f))
+	{
+		mLight.SetAngle(light_angle);
+		objLight.SetNeedToUpdate(true);
+	}
+	if (ImGui::ColorEdit3("Volume Color", volume_color))
+	{
+		volume_color_v = XMFLOAT3(volume_color);
+		mSceneUniform.ApplyVolumeCol(volume_color_v);
+	}
+	if (ImGui::SliderFloat("Volume G", &volume_g, 0.0f, 1.0f, "%.6f"))
+	{
+		mSceneUniform.ApplyVolumeG(volume_g);
+	}
+	if (ImGui::SliderFloat("Volume Noise Scale", &volume_noise_scale, 0.0f, 1.0f, "%.6f"))
+	{
+		mSceneUniform.ApplyVolumeNoiseScale(volume_noise_scale);
+	}
+	if (ImGui::SliderFloat3("Volume Noise Size", volume_noise_size, 0.0f, 2.0f))
+	{
+		volume_noise_size_v = XMFLOAT3(volume_noise_size);
+		mSceneUniform.ApplyVolumeNoiseSize(volume_noise_size_v);
+	}
+	if (ImGui::SliderFloat3("Volume Noise Vel", volume_noise_vel, -1.0f, 1.0f, "%.6f"))
+	{
+		volume_noise_vel_v = XMFLOAT3(volume_noise_vel);
+		mSceneUniform.ApplyVolumeNoiseVel(volume_noise_vel_v);
+	}
+
+	ImGui::Text("Z and mouse,W,A,S,D,Q,E - ctrl volume");
+	ImGui::Text("X and mouse,<,>,arrows - ctrl light");
+	ImGui::Text("C and mouse - ctrl camera");
+	deltaTime = 1.f / ImGui::GetIO().Framerate;
+	ImGui::Text("fps %.3f ms/frame (%.1f FPS)", 1000.0f * deltaTime, 1.f / deltaTime);
+	ImGui::End();
+
+	// Set to default render target
+	mRenderer.SetDefaultRenderTarget();
+	// Rendering
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Draw()
+{
+	//Draw scene
+	DrawScene();
+	//Draw gui
+	DrawGui();
 	//Present the backbuffer to the screen
 	mRenderer.SwapChain->Present(0, 0);
 }
 
 void DetectInput()
 {
-	DIMOUSESTATE mouseCurrState;
 	BYTE keyboardCurrState[256];
 
 	DIKeyboard->Acquire();
-	DIMouse->Acquire();
 
-	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
 	DIKeyboard->GetDeviceState(sizeof(keyboardCurrState), (LPVOID)&keyboardCurrState);
+
+	bool updateVolume = false;
+	bool updateLight = false;
+	bool updateCamera = false;
 
 	//keyboard control
 	if (KEYDOWN(keyboardCurrState, DIK_ESCAPE))
@@ -374,7 +566,6 @@ void DetectInput()
 		PostMessage(hwnd, WM_DESTROY, 0, 0);
 	}
 
-	bool updateVolume = false;
 	if (KEYDOWN(keyboardCurrState, DIK_W))
 	{
 		mTransformVolume.position.y += 0.001;
@@ -406,7 +597,6 @@ void DetectInput()
 		updateVolume = true;
 	}
 
-	bool updateLight = false;
 	if (KEYDOWN(keyboardCurrState, DIK_UP))
 	{
 		mTransformAxis.position.y += 0.005;
@@ -439,81 +629,101 @@ void DetectInput()
 	}
 
 	//mouse control
-	if (KEYDOWN(keyboardCurrState, DIK_Z))//control volume
+	if (KEYDOWN(keyboardCurrState, DIK_Z)|| 
+		KEYDOWN(keyboardCurrState, DIK_X)|| 
+		KEYDOWN(keyboardCurrState, DIK_C))
 	{
-		if (mouseCurrState.lX != 0)
+		if (!mouseAcquired)
 		{
-			mTransformVolume.rotation.y += mouseCurrState.lX * 0.1;
-			updateVolume = true;
+			DIMouse->Acquire();
+			mouseAcquired = true;
 		}
-		if (mouseCurrState.lY != 0)
+
+		DIMOUSESTATE mouseCurrState;
+		DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
+
+		if (KEYDOWN(keyboardCurrState, DIK_Z))//control volume
 		{
-			mTransformVolume.rotation.x += mouseCurrState.lY * 0.1;
-			updateVolume = true;
+			if (mouseCurrState.lX != 0)
+			{
+				mTransformVolume.rotation.y += mouseCurrState.lX * 0.1;
+				updateVolume = true;
+			}
+			if (mouseCurrState.lY != 0)
+			{
+				mTransformVolume.rotation.x += mouseCurrState.lY * 0.1;
+				updateVolume = true;
+			}
+			if (mouseCurrState.rgbButtons[0] > 0)//MLB
+			{
+				mTransformVolume.rotation.z += 0.1;
+				updateVolume = true;
+			}
 		}
-		if (mouseCurrState.rgbButtons[0] > 0)//MLB
+		else if (KEYDOWN(keyboardCurrState, DIK_X))//control light
 		{
-			mTransformVolume.rotation.z += 0.1;
-			updateVolume = true;
+			if (mouseCurrState.lX != 0)
+			{
+				mTransformAxis.rotation.y += mouseCurrState.lX * 0.1;
+				updateLight = true;
+			}
+			if (mouseCurrState.lY != 0)
+			{
+				mTransformAxis.rotation.x += mouseCurrState.lY * 0.1;
+				updateLight = true;
+			}
+			if (mouseCurrState.rgbButtons[0] > 0)//MLB
+			{
+				mTransformAxis.rotation.z += 0.1;
+				updateLight = true;
+			}
 		}
+		else if (KEYDOWN(keyboardCurrState, DIK_C))//control camera
+		{
+			if (mouseCurrState.lX != 0)
+			{
+				mCamera.horizontalAngle += mouseCurrState.lX * 0.1;
+				updateCamera = true;
+			}
+			if (mouseCurrState.lY != 0)
+			{
+				mCamera.verticalAngle += mouseCurrState.lY * 0.1;
+				if (mCamera.verticalAngle > 90 - EPSILON) mCamera.verticalAngle = 89 - EPSILON;
+				if (mCamera.verticalAngle < -90 + EPSILON) mCamera.verticalAngle = -89 + EPSILON;
+				updateCamera = true;
+			}
+			if (mouseCurrState.lZ != 0)
+			{
+				mCamera.distance -= mouseCurrState.lZ * 0.01;
+				if (mCamera.distance < 0 + EPSILON) mCamera.distance = 0.1 + EPSILON;
+				updateCamera = true;
+			}
+		}
+
+		mouseLastState = mouseCurrState;
 	}
-	else if (KEYDOWN(keyboardCurrState, DIK_X))//control light
+	else if (mouseAcquired)
 	{
-		if (mouseCurrState.lX != 0)
-		{
-			mTransformAxis.rotation.y += mouseCurrState.lX * 0.1;
-			updateLight = true;
-		}
-		if (mouseCurrState.lY != 0)
-		{
-			mTransformAxis.rotation.x += mouseCurrState.lY * 0.1;
-			updateLight = true;
-		}
-		if (mouseCurrState.rgbButtons[0] > 0)//MLB
-		{
-			mTransformAxis.rotation.z += 0.1;
-			updateLight = true;
-		}
-	}
-	else if (KEYDOWN(keyboardCurrState, DIK_C))//control camera
-	{
-		bool updateCamera = false;
-		if (mouseCurrState.lX != 0)
-		{
-			mCamera.horizontalAngle += mouseCurrState.lX * 0.1;
-			updateCamera = true;
-		}
-		if (mouseCurrState.lY != 0)
-		{
-			mCamera.verticalAngle += mouseCurrState.lY * 0.1;
-			if (mCamera.verticalAngle > 90 - EPSILON) mCamera.verticalAngle = 89 - EPSILON;
-			if (mCamera.verticalAngle < -90 + EPSILON) mCamera.verticalAngle = -89 + EPSILON;
-			updateCamera = true;
-		}
-		if (mouseCurrState.lZ != 0)
-		{
-			mCamera.distance -= mouseCurrState.lZ * 0.01;
-			if (mCamera.distance < 0 + EPSILON) mCamera.distance = 0.1 + EPSILON;
-			updateCamera = true;
-		}
-		if (updateCamera)
-		{
-			objCamera.UpdateObject();
-		}
+		DIMouse->Unacquire();
+		mouseAcquired = false;
 	}
 
 	if (updateLight)
 	{
-		objLight.UpdateObject();
-		objCamera.UpdateObject();//for ApplyCameraShadow(...)
+		objLight.SetNeedToUpdate(true);
+		objCamera.SetNeedToUpdate(true);//for ApplyCameraShadow(...)
 	}
 
 	if (updateVolume)
 	{
-		objVolume.UpdateObject();
+		objVolume.SetNeedToUpdate(true);
 	}
 
-	mouseLastState = mouseCurrState;
+	if (updateCamera)
+	{
+		objCamera.SetNeedToUpdate(true);
+	}
+
 	std::memcpy(keyboardLastState, keyboardCurrState, 256 * sizeof(BYTE));
 }
 
@@ -523,6 +733,9 @@ void UpdateScene()
 	mFrameUniform.ApplyFrameNum(mRenderer.frame);
 	mFrameUniformLight.ApplyFrameNum(mRenderer.frame);
 	mScene.UpdateSceneCheck(mRenderer.d3d11DevCon);
+	mTransformFanBlade.rotation.y += deltaTime * fanAngularVel;
+	if (mTransformFanBlade.rotation.y > 360.f) mTransformFanBlade.rotation.y = 0.f;
+	objFanBlade.UpdateObject();
 }
 
 int Messageloop()
@@ -543,16 +756,24 @@ int Messageloop()
 			// run game code
 			DetectInput();
 			UpdateScene();
-			DrawScene();
+			Draw();
 		}
 	}
+
 	return msg.wParam;
 }
 
 void Release()
 {
+	// imgui shutdown
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+	// my release
 	DIKeyboard->Unacquire();
+	DIKeyboard->Release();
 	DIMouse->Unacquire();
+	DIMouse->Release();
 	DirectInput->Release();
 }
 
@@ -575,6 +796,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (!InitDirectInput(hInstance))	//Initialize input device
 	{
 		MessageBox(0, "Input Initialization - Failed", "Error", MB_OK);
+		return 0;
+	}
+
+	if (!InitGui())	//Initialize Gui
+	{
+		MessageBox(0, "Gui Initialization - Failed", "Error", MB_OK);
 		return 0;
 	}
 
