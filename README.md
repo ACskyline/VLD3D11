@@ -54,10 +54,10 @@ When rendering the geometry, for each fragment of it, I calculate a ray from the
 
 |           cube          |           sphere          |           cone          | 
 |:-----------------------:|:-------------------------:|:-----------------------:|
-|![](img/vld3d11_cube.gif)|![](img/vld3d11_sphere.JPG)|![](img/vld3d11_cone.JPG)|
+|![](img/vld3d11_cube.gif)|![](img/vld3d11_sphere.gif)|![](img/vld3d11_cone.gif)|
 
 |      camera movement      |       light movement       | 
-|:---------------------  --:|:--------------------------:|
+|:-------------------------:|:--------------------------:|
 |![](img/vld3d11_camera.gif)|![](img/vld3d11_control.gif)|
 
 ### details
