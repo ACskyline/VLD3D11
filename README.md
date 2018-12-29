@@ -49,7 +49,7 @@ Features
 
 ### details
 
-When rendering the geometry, for each fragment of it, I calculate a ray from the camera to that fragment. Then I use the ray to intersect the geometry in the fragment shader and find the enter and exit position. Along the vector from enter to exit, find a fixed number of positions and use them to sample a 3D noise function as transmittance. Finally, plug the transmittance in to the scattering phase function to get the final scattering factor.
+When rendering the geometry, for each fragment of it, I calculate a ray from the camera to that fragment. Then I use the ray to intersect the geometry in the fragment shader and find the enter and exit position. Then I use ray marching along the vector from enter to exit. During this process, several positions along the ray will be evaluated. For each position, a scalar noise produced by a 3D noise function will be used as a scaling factor which will then be used as a scaling factor to scale the result of the scattering phase function to get the final scattering factor.
 
 ---
 
@@ -77,16 +77,16 @@ To make sure the volume will be rendered when the camera is inside of it, the cu
 
 - [ ] Full Screen Volume (Quad)
 
-- [ ] Other Light Types
+- [ ] More Light Types
 
   - [ ] Directional Light
 
   - [ ] Point Light
 
-- [ ] Other Shadow Techniques
+- [ ] More Shadow Techniques
 
   - [ ] Variance Shadow Map
 
   - [ ] Percentage Close Soft Shadow
 
-  - [ ] Adaptive Shadow Frustum
+- [ ] Some Cloud Rendering Experiments?
