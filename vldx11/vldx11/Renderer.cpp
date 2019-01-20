@@ -63,7 +63,7 @@ bool Renderer::InitD3D11App(HWND hwnd)
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;//double buffer
+	swapChainDesc.BufferCount = 3;//triple buffer, this is different from d3d9, front buffer is included
 	swapChainDesc.OutputWindow = hwnd;
 	swapChainDesc.Windowed = TRUE;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
