@@ -61,7 +61,7 @@ When rendering the geometry, for each fragment of it, I calculate a ray from the
 |:-----------------------:|:-------------------------:|:-----------------------:|
 |![](img/vld3d11_cube.gif)|![](img/vld3d11_sphere.gif)|![](img/vld3d11_cone.gif)|
 
-|      camera movement      |       light movement       | 
+|      camera movement      |      light adjustment      | 
 |:-------------------------:|:--------------------------:|
 |![](img/vld3d11_camera.gif)|![](img/vld3d11_control.gif)|
 
