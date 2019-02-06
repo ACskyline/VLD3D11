@@ -53,7 +53,7 @@ When rendering the geometry, for each fragment of it, I calculate a ray from the
 
 ---
 
-## III. Volumetric Light (with PCF Shadow)
+## III. Volumetric Light (spot light) (with PCF shadow)
 
 ### overview
 
