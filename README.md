@@ -73,7 +73,7 @@ To make sure the volume will be rendered when the camera is inside of it, the cu
 
 ### IV. What's Next?
 
-- [ ] Dither Pattern
+- [ ] Dither Pattern & Up Sampling
 
 - [ ] Full Screen Volume (Quad)
 
