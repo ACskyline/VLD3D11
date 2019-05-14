@@ -71,7 +71,7 @@ To make sure the volume will be rendered when the camera is inside of it, the cu
 
 ---
 
-### IV. What's Next?
+### IV. What's next?
 
 - [ ] Dither Pattern & Up Sampling
 
